@@ -9,6 +9,7 @@ vulkan-loader-32bit
 mesa-vulkan-radeon-32bit
 nvidia-libs-32bit
 mesa-dri
+mesa-demos
 vulkan-loader
 rtkit
 pipewire
