@@ -98,11 +98,11 @@ stage_zero(){
     fi
 
     echo \"\$hostname\" > /etc/hostname
-    echo \"root:\$password\" | chpasswd
+    echo \"root:\$password\" | chpasswd -c SHA512
 
     echo 'Setting up new user...'
     useradd -m \"\$username\"
-    echo \"\$username:\$password\" | chpasswd
+    echo \"\$username:\$password\" | chpasswd -c SHA512
     usermod -aG wheel \"\$username\"
     usermod -aG audio \"\$username\"
     sed -i '/^#\s*%wheel ALL=(ALL:ALL) NOPASSWD: ALL/s/^# //' /etc/sudoers
