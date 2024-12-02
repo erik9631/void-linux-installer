@@ -51,35 +51,42 @@ function select_wireless_network() {
         echo "No interface provided."
         return 1
     fi
-
+    # Prompt the user to select a wireless network
+    local selection='0'
     local interface=$1
     local networks
-    mapfile -t networks < <(iw dev "$interface" scan | grep -E 'SSID: .+?$' | sed 's/^.*SSID: //')
 
-    if [ ${#networks[@]} -eq 0 ]; then
-        echo "No wireless networks found." >&2
-        return 1
-    fi
+    while [[ $selection == '0' ]]; do
 
-    echo "Available wireless networks:" >&2
-    local i=0
-    for ssid in "${networks[@]}"; do
-        echo "[$i] $ssid" >&2
-        ((i++))
+      mapfile -t networks < <(echo "rescan"; echo "exit"; iw dev "$interface" scan | grep -E 'SSID: .+?$' | sed 's/^.*SSID: //')
+
+      echo "Available wireless networks:" >&2
+      local i=0
+      for ssid in "${networks[@]}"; do
+          echo "[$i] $ssid" >&2
+          ((i++))
+      done
+
+
+      read -rp "Select the wireless network to use [0-$((i-1))]: " selection
+
+      # Validate the input
+      if ! [[ "$selection" =~ ^[0-9]+$ ]] || [ "$selection" -ge "$i" ]; then
+          echo "Invalid selection." >&2
+          return 1
+      fi
+      if [[ $selection == '1' ]]; then
+        return 1;
+      fi
+
+      # Return the selected wireless network SSID
+      if (( selection > 2 )); then
+        echo "${networks[$selection]}"
+        return 0
+      fi
+
     done
 
-    # Prompt the user to select a wireless network
-    local selection
-    read -rp "Select the wireless network to use [0-$((i-1))]: " selection
-
-    # Validate the input
-    if ! [[ "$selection" =~ ^[0-9]+$ ]] || [ "$selection" -ge "$i" ]; then
-        echo "Invalid selection." >&2
-        return 1
-    fi
-
-    # Return the selected wireless network SSID
-    echo "${networks[$selection]}"
 }
 export -f select_wireless_network
 

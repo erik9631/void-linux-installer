@@ -70,12 +70,19 @@ stage_zero(){
   read -p 'Set your hostname: ' hostname
   read -p 'Set your username: ' username
   read -sp 'Set your root password: ' password
+  echo ""
 
   local stage0_packages_str
   local stage0_packages
+  local boot_mode
+  boot_mode=$(get_boot_mode)
   stage0_packages_str="$(export_package_group "stage0" "xbps")"
 
-xchroot /mnt /bin/bash << EOF
+chroot /mnt /usr/bin/env hostname="$hostname" username="$username" password="$password" /bin/bash << 'EOF'
+    # Source the files
+    source /opt/install/includes/bootloader
+    source /opt/install/includes/package_installer
+
     # Update xbps
     xbps-install -Suy xbps
     xbps-install -uy
@@ -101,21 +108,17 @@ xchroot /mnt /bin/bash << EOF
     useradd -m $username
     echo "$username:$password" | chpasswd
     usermod -aG wheel "$username"
-    usermod -aG lp "$username"
-    usermod -aG dbus "$username"
-    usermod -aG input "$username"
+    usermod -aG audio "$username"
     sed -i '/^#\s*%wheel ALL=(ALL:ALL) NOPASSWD: ALL/s/^# //' /etc/sudoers
 
     echo 'Preparing grub...'
-    sleep 5
-    if ! install_grub; then
-        echo 'Grub installation failed'
+    if ! install_grub "$boot_mode"; then
+        echo 'Grub installation failed' >&2
         exit 1
     fi
-    sleep 5
 
     if ! xbps-reconfigure -fa; then
-        echo 'xbps-reconfigure failed'
+        echo 'xbps-reconfigure failed' >&2
         exit 1
     fi
 

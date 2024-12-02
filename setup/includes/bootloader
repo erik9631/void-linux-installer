@@ -54,7 +54,7 @@ export -f get_grub_target
 install_grub() {
     set -e
     local boot_mode device target
-    boot_mode=$(get_boot_mode)
+    boot_mode=$1
 
     if [[ "$boot_mode" == "UEFI" ]]; then
         echo "Installing GRUB for UEFI..."
