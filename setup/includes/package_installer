@@ -8,7 +8,7 @@ function export_package_group(){
   list_name=$2
 
   clean_package_list=$(sed -E 's/(( *)#.*$)|(^( |	)+$)//' < "$SCRIPT_DIR"/packages/"$list_name".lst | sed '/^[[:space:]]*$/d')
-  echo "$clean_package_list" | awk "/^\[$group_name\]/{read=1;next}/\\[/{read=0}read{print}"
+  echo "$clean_package_list" | awk "/^\[$group_name\]/{read=1;next}/\\[/{read=0}read && NF{print}"
 }
 export -f export_package_group
 
@@ -20,4 +20,4 @@ function install_xbps_packages() {
     return 1
   fi
 }
-export -f install_pacman_packages
+export -f install_xbps_packages

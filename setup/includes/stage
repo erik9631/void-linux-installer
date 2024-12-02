@@ -24,8 +24,6 @@ source "$SCRIPT_DIR/includes/display"
 # shellcheck source=service
 source "$SCRIPT_DIR/includes/cservice"
 
-# clone github.com/catppuccin/Kvantum and install the theme
-
 stage_zero(){
   # Check if the script is running as root
   local is_wireless
@@ -46,7 +44,7 @@ stage_zero(){
     echo "/mnt is mounted. Installing kernel..."
   else
     echo "/mnt is not mounted."
-	exit 1
+    exit 1
   fi
   local fstab_path="${LIVE_PATH}/scripts/fstab"
 
@@ -72,47 +70,45 @@ stage_zero(){
   read -sp 'Set your root password: ' password
   echo ""
 
+  export hostname
+  export password
+  export username
+
   local stage0_packages_str
-  local stage0_packages
   local boot_mode
+
   boot_mode=$(get_boot_mode)
   stage0_packages_str="$(export_package_group "stage0" "xbps")"
 
-xchroot /mnt /bin/bash << EOF
-    # Source the files
-    source /opt/install/includes/bootloader
-    source /opt/install/includes/package_installer
+  export stage0_packages_str
+  export boot_mode
 
-    # Update xbps
+  x_chroot /mnt /bin/bash -c "
     xbps-install -Suy xbps
     xbps-install -uy
     xbps-install -y base-system
     xbps-remove -y base-container-full
-
-    readarray -t stage0_packages <<< "${stage0_packages_str}"
-
-    echo "Installing basic packages" >&2
-    # Install basic packages
-    if (( ${#stage0_packages[@]} > 0 )); then
-        if ! install_xbps_packages "${stage0_packages[@]}"; then
-            echo "Failed to install xbps packages" >&2
-            exit 1
-        fi
+    if [[ -n \"\${stage0_packages_str}\" ]]; then
+      readarray -t stage0_packages <<< \"\${stage0_packages_str}\"
+      echo 'Installing basic packages' >&2
+          if ! install_xbps_packages \"\${stage0_packages[@]}\"; then
+              echo 'Failed to install xbps packages' >&2
+              exit 1
+          fi
     fi
 
-    # Setup etc/host
-    echo "$hostname" > /etc/hostname
-    echo "root:$password" | chpasswd
+    echo \"\$hostname\" > /etc/hostname
+    echo \"root:\$password\" | chpasswd
 
-    echo "Setting up new user..."
-    useradd -m $username
-    echo "$username:$password" | chpasswd
-    usermod -aG wheel "$username"
-    usermod -aG audio "$username"
+    echo 'Setting up new user...'
+    useradd -m \"\$username\"
+    echo \"\$username:\$password\" | chpasswd
+    usermod -aG wheel \"\$username\"
+    usermod -aG audio \"\$username\"
     sed -i '/^#\s*%wheel ALL=(ALL:ALL) NOPASSWD: ALL/s/^# //' /etc/sudoers
 
     echo 'Preparing grub...'
-    if ! install_grub "$boot_mode"; then
+    if ! install_grub \"\$boot_mode\"; then
         echo 'Grub installation failed' >&2
         exit 1
     fi
@@ -123,9 +119,9 @@ xchroot /mnt /bin/bash << EOF
     fi
 
     echo 'Preparing for stage 1...'
-    mkdir /var/install/
+    mkdir -p /var/install/
     touch /var/install/stage1
-EOF
+  "
 
   echo 'Stage 0 complete, rebooting into the system to run stage 1...'
   # sleep 5
