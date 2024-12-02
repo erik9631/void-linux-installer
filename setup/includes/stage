@@ -78,7 +78,7 @@ stage_zero(){
   boot_mode=$(get_boot_mode)
   stage0_packages_str="$(export_package_group "stage0" "xbps")"
 
-chroot /mnt /usr/bin/env hostname="$hostname" username="$username" password="$password" /bin/bash << 'EOF'
+xchroot /mnt /bin/bash << EOF
     # Source the files
     source /opt/install/includes/bootloader
     source /opt/install/includes/package_installer
