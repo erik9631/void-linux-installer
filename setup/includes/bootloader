@@ -1,0 +1,94 @@
+#!/bin/bash
+
+get_boot_mode() {
+    while true; do
+        read -rp "Install GRUB for UEFI or BIOS? [1/2]: " choice
+        case "${choice,,}" in  # ${choice,,} converts to lowercase
+            1)
+                echo "UEFI"
+                return 0
+                ;;
+            2)
+                echo "BIOS"
+                return 0
+                ;;
+            *)
+                echo "Please enter '1' or '2'" >&2
+                ;;
+        esac
+    done
+}
+export -f get_boot_mode
+
+get_grub_target() {
+    local architecture boot_mode target
+    architecture=$(uname -m)
+    boot_mode=$1
+
+    case "$architecture" in
+        x86_64)
+            if [[ "$boot_mode" == "UEFI" ]]; then
+                target="x86_64-efi"
+            else
+                target="i386-pc"
+            fi
+            ;;
+        i*86)
+            if [[ "$boot_mode" == "UEFI" ]]; then
+                target="i386-efi"
+            else
+                target="i386-pc"
+            fi
+            ;;
+        *)
+            echo "Unsupported architecture: $architecture" >&2
+            return 1
+            ;;
+    esac
+
+    echo "$target"
+}
+export -f get_grub_target
+
+
+install_grub() {
+    set -e
+    local boot_mode device target
+    boot_mode=$(get_boot_mode)
+
+    if [[ "$boot_mode" == "UEFI" ]]; then
+        echo "Installing GRUB for UEFI..."
+        target=$(get_grub_target "$boot_mode")
+
+        if [[ -z "$target" ]]; then
+            echo "Failed to determine GRUB target" >&2
+            exit 1
+        fi
+
+        xbps-install -y grub-"$target"
+        if grub-install \
+            --target="$target" \
+            --efi-directory=/boot \
+            --bootloader-id="Void Linux" \
+            --recheck; then
+            echo "GRUB UEFI installation successful."
+        else
+            echo "GRUB UEFI installation failed." >&2
+            exit 1
+        fi
+    else
+        echo "Enter the device to install GRUB (e.g., /dev/sda):"
+        read -r device
+        echo "Installing GRUB for BIOS on $device..."
+        xbps-install -y grub
+        if grub-install "$device"; then
+            echo "GRUB BIOS installation successful."
+        else
+            echo "GRUB BIOS installation failed." >&2
+            exit 1
+        fi
+    fi
+
+    echo "GRUB installation complete."
+}
+export -f install_grub

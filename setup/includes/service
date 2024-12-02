@@ -1,0 +1,27 @@
+#!/bin/bash
+
+function service(){
+  case "$1" in
+    --create)
+      if ! ln -s "/etc/sv/$2" /var/service/; then
+        return 1
+      fi
+      if ! sv up "$2"; then
+        return 1
+      fi
+    ;;
+    --remove)
+      if ! sv down "$2"; then
+        return 1
+      fi
+      if ! rm "/var/service/$2"; then
+        return 1
+      fi
+    ;;
+    --*)
+      echo "Invalid arguments. Example: service <create | remove> <service_name>" >&2
+    ;;
+  esac
+}
+
+export -f service

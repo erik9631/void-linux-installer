@@ -1,0 +1,159 @@
+#!/bin/bash
+ask_for_confirmation(){
+  local confirmation
+  read -r -p "$1 (y/N) " confirmation
+
+  case $confirmation in
+    [yY][eE][sS]|[yY])
+        return 0
+        ;;
+    *)
+        echo "Operation cancelled by user." >&2
+        return 1
+        ;;
+  esac
+}
+export -f ask_for_confirmation
+
+function is_time_synced(){
+  local sync_status
+  # Parse synchronization status and return error if not synchronized
+  sync_status=$(timedatectl show --property=NTPSynchronized --value)
+  if [ "$sync_status" != "yes" ]; then
+      echo "Error: Time synchronization failed, NTPSynchronized is set to $sync_status" >&2
+      return 1
+  fi
+}
+export -f is_time_synced
+
+# Function for checking if the user is root
+function check_root_user() {
+  if [ "$(id -u)" != "0" ]; then
+    echo "Error: This script must be run as root"
+    exit 1
+  fi
+}
+export -f check_root_user
+
+function get_current_stage_from_var() {
+    local stage
+    stage=$(ls /var/install | grep -Eo 'stage[0-9]' | grep -Eo '[0-9]')
+
+    if [[ -n $stage ]]; then
+        echo "$stage"
+    else
+        >&2 echo "No stage found."
+        return 1  # Return an error code if no stage is found.
+    fi
+}
+export -f get_current_stage_from_var
+
+function git_get_files_from_url(){
+  local url=$1
+  local git_dir
+  git_dir=$(mktemp -d git-XXXXXXXXXX)
+  local archive="$git_dir/archive.tar.gz"
+  if ! wget -O "$archive" "$url"; then
+    echo "Error: Failed to download files from $url" >&2
+    return 1
+  fi
+  if ! tar xvzf "$archive" -C "$git_dir" --strip-components=1; then
+    echo "Error: Failed to extract files from $archive" >&2
+    return 2
+  fi
+  echo "$git_dir"
+}
+export -f get_current_stage_from_var
+
+function install_model_packages(){
+  local model_name
+  local model_packages
+  model_name=$(cat /sys/devices/virtual/dmi/id/product_name)
+  readarray -t model_packages <<< "$(export_package_group "$model_name" "pacman")"
+
+  if ! install_xbps_packages "${model_packages[@]}"; then
+    echo "Failed to install model specific packages"
+    sleep 5
+  fi
+}
+export -f install_model_packages
+
+function add_initramfs_resume_hook(){
+  sudo sed -i '/^HOOKS=/s/)$/ resume)/' /etc/mkinitcpio.conf
+  if ! sudo mkinitcpio -P; then
+    echo "Fatal error. Failed to update initramfs" >&2
+    return 1
+  fi
+}
+
+function select_swap_disk_uuid(){
+  local swap_disks
+  IFS=$'\n'i
+  readarray -t swap_disks <<< "$(lsblk -lo NAME,UUID,FSTYPE | grep -i 'swap' | tr -s ' ')"
+  unset IFS
+
+  if (( ${#swap_disks[@]} == 0)); then
+    echo "Error: No swap disks found" >&2
+    return 1
+  fi
+
+  local counter
+  local disk
+  counter=0
+  for disk in "${swap_disks[@]}"; do
+    echo "$counter) $disk" >&2
+    counter=$((counter+1))
+  done
+
+  local swap_disk_index
+  swap_disk_index=0
+  if (( ${#swap_disks[@]} > 1)); then
+      read -r -p "Select swap disk: " swap_disk_index
+  fi
+
+  if [[ "$swap_disk_index" =~ ^[0-9]+$ ]] && (( "$swap_disk_index" < "${#swap_disks[@]}" )); then
+    echo "${swap_disks[$swap_disk_index]}" | cut -d' ' -f2
+  else
+    return 1
+  fi
+
+}
+export -f select_swap_disk_uuid
+
+function add_resume_device_to_kernel(){
+  local resume_device
+  while ! resume_device=$(select_swap_disk_uuid); do
+    echo "Error: Failed to select swap disk" >&2
+  done
+
+  echo "Selected swap disk UUID: $resume_device"
+  sleep 2
+  sudo sed -i "/^GRUB_CMDLINE_LINUX_DEFAULT=/s/\"$/ resume=UUID=$resume_device\"/" /etc/default/grub
+  if ! sudo grub-mkconfig -o /boot/grub/grub.cfg; then
+    echo "Error: Failed to update grub config" >&2
+    return 1
+  fi
+}
+export -f add_resume_device_to_kernel
+
+function apply_gtk_theme(){
+  if ! dconf load /org/gnome/desktop/interface/ < "$SCRIPT_DIR"/files/system/gtk-theme.dump; then
+    echo "Error: Failed to apply GTK theme" >&2
+    return 1
+  fi
+}
+export -f apply_gtk_theme
+
+function add_mdns_to_nsswitch(){
+
+  if ! grep -q 'mdns_minimal' /etc/nsswitch.conf; then
+    echo "mdns_minimal already in nsswitch!" >&2
+    return 0
+  fi
+
+  if ! sudo sed -i '/^hosts:/s/mymachines/mymachines mdns_minimal [NOTFOUND=return]/' /etc/nsswitch.conf; then
+    echo "Error: Failed to add mdns to nsswitch" >&2
+    return 1
+  fi
+}
+export -f add_mdns_to_nsswitch
