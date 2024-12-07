@@ -1,5 +1,119 @@
 #!/bin/bash
-ask_for_confirmation(){
+function select_from_list() {
+  local -n list=$1  # Creates reference to original array
+  local max_items=$2
+  if ((max_items > 6)); then
+    max_items=6
+  fi
+
+  local page_count="$((${#list[@]} / max_items))"
+
+  # Add an extra page for remainder items
+  if ((${#list[@]} % max_items != 0)); then
+    ((page_count++))
+  fi
+
+  local current_page=0
+  local selected_item_index
+  while true; do
+    clear
+    local selection=0
+    local start="$((current_page*max_items))"
+    local index=$start
+    local end=$((start + max_items < ${#list[@]} ? start + max_items : ${#list[@]}))
+
+    while ((index < end)); do
+      echo "$selection ) ${list[$index]}"
+      selection=$((selection+1))
+      index=$((index+1))
+    done
+
+    if (( current_page < page_count - 1)); then
+      echo "7 ) Next page"
+    fi
+
+    echo " "
+
+    if (( current_page > 0 )); then
+      echo "8 ) Previous page"
+    fi
+    echo "9 ) Exit"
+    echo "Page $((current_page)) / $page_count"
+    read -r -p "Select an option: " selection
+    case $selection in
+      [0-6])
+        local selected_item_index=$((selection + start))
+        if ((selected_item_index < "${#list[@]}")); then
+          echo "$selected_item_index"
+          return 0
+        fi
+        ;;
+      7)
+        if ((current_page+1 < page_count)); then
+            current_page=$((current_page+1))
+        fi
+        ;;
+      8)
+        if ((current_page-1 >= 0)); then
+            current_page=$((current_page-1))
+        fi
+        ;;
+      9)
+        return 1
+        ;;
+    esac
+  done
+}
+
+function select_time_zone() {
+  while true; do
+  local timezones
+  readarray -t timezones <<< "$(find /usr/share/zoneinfo -maxdepth 1 -type d -printf '%f\n' | grep -E '^[A-Z]')"
+  if [[ ${#timezones[@]} -eq 0 ]]; then
+      echo "Error: No timezones found"
+      return 1
+  fi
+
+  local selected_index
+  if ! selected_index=$(select_from_list timezones 6); then
+    echo "Error: Failed to select timezone"
+    return 1
+  fi
+
+  local item="${timezones[$selected_index]}"
+  local sub_zone
+  readarray -t sub_zone <<< "$(find "/usr/share/zoneinfo/$item" -type f -printf '%f\n')"
+  local selected_sub_zone
+  if ! selected_sub_zone=$(select_from_list sub_zone 6); then
+    echo "Error: Failed to select sub-zone"
+    continue
+  fi
+  echo "${timezones[$selected_index]}/${sub_zone[$selected_sub_zone]}"
+  break
+  done
+  return 0
+}
+
+function sync_datetime(){
+  local selected_time_zone
+  if ! selected_time_zone=$(select_time_zone); then
+    return 1
+  fi
+
+  if ! grep -E "export TZ='$selected_time_zone'" "$HOME"/.bashrc; then
+    echo "export TZ=$selected_time_zone" >> "$HOME"/.bashrc
+    echo "New time set to to $selected_time_zone" >&2
+    return 0
+  fi
+  sed -i "s/export TZ=.*/export TZ='$selected_time_zone'/" "$HOME"/.bashrc
+  echo "Time zone changed to $selected_time_zone" >&2
+  export TZ="$selected_time_zone"
+  return 0
+}
+
+
+
+function ask_for_confirmation(){
   local confirmation
   read -r -p "$1 (y/N) " confirmation
 
@@ -14,17 +128,6 @@ ask_for_confirmation(){
   esac
 }
 export -f ask_for_confirmation
-
-function is_time_synced(){
-  local sync_status
-  # Parse synchronization status and return error if not synchronized
-  sync_status=$(timedatectl show --property=NTPSynchronized --value)
-  if [ "$sync_status" != "yes" ]; then
-      echo "Error: Time synchronization failed, NTPSynchronized is set to $sync_status" >&2
-      return 1
-  fi
-}
-export -f is_time_synced
 
 # Function for checking if the user is root
 function check_root_user() {
@@ -65,77 +168,6 @@ function git_get_files_from_url(){
 }
 export -f get_current_stage_from_var
 
-function install_model_packages(){
-  local model_name
-  local model_packages
-  model_name=$(cat /sys/devices/virtual/dmi/id/product_name)
-  readarray -t model_packages <<< "$(export_package_group "$model_name" "pacman")"
-
-  if ! install_xbps_packages "${model_packages[@]}"; then
-    echo "Failed to install model specific packages"
-    sleep 5
-  fi
-}
-export -f install_model_packages
-
-function add_initramfs_resume_hook(){
-  sudo sed -i '/^HOOKS=/s/)$/ resume)/' /etc/mkinitcpio.conf
-  if ! sudo mkinitcpio -P; then
-    echo "Fatal error. Failed to update initramfs" >&2
-    return 1
-  fi
-}
-
-function select_swap_disk_uuid(){
-  local swap_disks
-  IFS=$'\n'i
-  readarray -t swap_disks <<< "$(lsblk -lo NAME,UUID,FSTYPE | grep -i 'swap' | tr -s ' ')"
-  unset IFS
-
-  if (( ${#swap_disks[@]} == 0)); then
-    echo "Error: No swap disks found" >&2
-    return 1
-  fi
-
-  local counter
-  local disk
-  counter=0
-  for disk in "${swap_disks[@]}"; do
-    echo "$counter) $disk" >&2
-    counter=$((counter+1))
-  done
-
-  local swap_disk_index
-  swap_disk_index=0
-  if (( ${#swap_disks[@]} > 1)); then
-      read -r -p "Select swap disk: " swap_disk_index
-  fi
-
-  if [[ "$swap_disk_index" =~ ^[0-9]+$ ]] && (( "$swap_disk_index" < "${#swap_disks[@]}" )); then
-    echo "${swap_disks[$swap_disk_index]}" | cut -d' ' -f2
-  else
-    return 1
-  fi
-
-}
-export -f select_swap_disk_uuid
-
-function add_resume_device_to_kernel(){
-  local resume_device
-  while ! resume_device=$(select_swap_disk_uuid); do
-    echo "Error: Failed to select swap disk" >&2
-  done
-
-  echo "Selected swap disk UUID: $resume_device"
-  sleep 2
-  sudo sed -i "/^GRUB_CMDLINE_LINUX_DEFAULT=/s/\"$/ resume=UUID=$resume_device\"/" /etc/default/grub
-  if ! sudo grub-mkconfig -o /boot/grub/grub.cfg; then
-    echo "Error: Failed to update grub config" >&2
-    return 1
-  fi
-}
-export -f add_resume_device_to_kernel
-
 function apply_gtk_theme(){
   if ! dconf load /org/gnome/desktop/interface/ < "$SCRIPT_DIR"/files/system/gtk-theme.dump; then
     echo "Error: Failed to apply GTK theme" >&2
@@ -144,19 +176,6 @@ function apply_gtk_theme(){
 }
 export -f apply_gtk_theme
 
-function add_mdns_to_nsswitch(){
-
-  if ! grep -q 'mdns_minimal' /etc/nsswitch.conf; then
-    echo "mdns_minimal already in nsswitch!" >&2
-    return 0
-  fi
-
-  if ! sudo sed -i '/^hosts:/s/mymachines/mymachines mdns_minimal [NOTFOUND=return]/' /etc/nsswitch.conf; then
-    echo "Error: Failed to add mdns to nsswitch" >&2
-    return 1
-  fi
-}
-export -f add_mdns_to_nsswitch
 
 function x_chroot() {
     fail() {

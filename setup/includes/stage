@@ -34,13 +34,13 @@ stage_zero(){
   fi
   is_wireless=$(echo "$connection_state" | grep -i -c 'wireless')
 
-  if (( is_wireless )); then
+  if ((is_wireless)); then
     echo "Wireless connection detected."
   else
     echo "Wired connection detected."
   fi
 
-  if findmnt -M "/mnt" > /dev/null; then
+  if findmnt -M "/mnt" >/dev/null; then
     echo "/mnt is mounted. Installing kernel..."
   else
     echo "/mnt is not mounted."
@@ -55,7 +55,7 @@ stage_zero(){
   fi
 
   echo "Generating file system table..."
-  "${fstab_path}/genfstab" -U /mnt >> /mnt/etc/fstab
+  "${fstab_path}/genfstab" -U /mnt >>/mnt/etc/fstab
 
   echo "Moving script to /mnt/opt/"
   cp -rv "$SCRIPT_DIR"/. /mnt/opt/install/
@@ -82,6 +82,28 @@ stage_zero(){
 
   export stage0_packages_str
   export boot_mode
+  # Install chrony and start the service
+  # Setup a time zone
+  # List of zones can be obtained from /usr/share/zoneinfo. This comes from tzdata package which should be pre-installed
+  # then make a symlink to the zone you want to use to export TZ='America/New_York' set in ~/.profile or ~/.bashrc:
+  # Setup dbus service
+  # Setup tlp and start tlp service
+  # install pipewire. After it is installed do:
+  # mkdir -p /etc/pipewire/pipewire.conf.d
+  #ln -s /usr/share/examples/pipewire/20-pipewire-pulse.conf /etc/pipewire/pipewire.conf.d/
+  # Also install rtkit as it is needed for pipewire for realtime scheduling
+  # install seatd and set up the service
+  # We also need to make sure we are in audio and video group
+  # Set up XDG_RUNTIME_DIR. The variable should be exported in /run/user/$(id -u). Make sure this folder exists. It should be created on session start by the user
+  # Install alsa-pipewire, then enable the PipeWire ALSA device and make it the default:
+  # mkdir -p /etc/alsa/conf.d
+  # ln -s /usr/share/alsa/alsa.conf.d/50-pipewire.conf /etc/alsa/conf.d
+  # ln -s /usr/share/alsa/alsa.conf.d/99-pipewire-default.conf /etc/alsa/conf.d
+  # insstall mesa-dri vulkan-loader (needed by wayfire)
+  # install wayfire
+  # Instal alacritty
+  # Install nerd-fonts
+
 
   x_chroot /mnt /bin/bash -c "
     xbps-install -Suy xbps
@@ -124,8 +146,8 @@ stage_zero(){
   "
 
   echo 'Stage 0 complete, rebooting into the system to run stage 1...'
-  # sleep 5
-  # shutdown -r now
+  sleep 5
+  shutdown -r now
 }
 
 stage_one(){
@@ -171,6 +193,9 @@ stage_one(){
 
 # User specific services
 stage_two(){
+
+
+
   local stage2_yay_packages
   readarray -t stage2_yay_packages <<< "$(export_package_group "stage2" "yay")"
   if ! install_yay_packages "${stage2_yay_packages[@]}"; then
