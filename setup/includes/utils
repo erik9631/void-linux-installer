@@ -64,53 +64,7 @@ function select_from_list() {
     esac
   done
 }
-
-function select_time_zone() {
-  while true; do
-  local timezones
-  readarray -t timezones <<< "$(find /usr/share/zoneinfo -maxdepth 1 -type d -printf '%f\n' | grep -E '^[A-Z]')"
-  if [[ ${#timezones[@]} -eq 0 ]]; then
-      echo "Error: No timezones found"
-      return 1
-  fi
-
-  local selected_index
-  if ! selected_index=$(select_from_list timezones 6); then
-    echo "Error: Failed to select timezone"
-    return 1
-  fi
-
-  local item="${timezones[$selected_index]}"
-  local sub_zone
-  readarray -t sub_zone <<< "$(find "/usr/share/zoneinfo/$item" -type f -printf '%f\n')"
-  local selected_sub_zone
-  if ! selected_sub_zone=$(select_from_list sub_zone 6); then
-    echo "Error: Failed to select sub-zone"
-    continue
-  fi
-  echo "${timezones[$selected_index]}/${sub_zone[$selected_sub_zone]}"
-  break
-  done
-  return 0
-}
-
-function sync_datetime(){
-  local selected_time_zone
-  if ! selected_time_zone=$(select_time_zone); then
-    return 1
-  fi
-
-  if ! grep -E "export TZ='$selected_time_zone'" "$HOME"/.bashrc; then
-    echo "export TZ=$selected_time_zone" >> "$HOME"/.bashrc
-    echo "New time set to to $selected_time_zone" >&2
-    return 0
-  fi
-  sed -i "s/export TZ=.*/export TZ='$selected_time_zone'/" "$HOME"/.bashrc
-  echo "Time zone changed to $selected_time_zone" >&2
-  export TZ="$selected_time_zone"
-  return 0
-}
-
+export -f select_from_list
 
 
 function ask_for_confirmation(){
