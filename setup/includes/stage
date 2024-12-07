@@ -58,13 +58,14 @@ stage_zero(){
   "$scripts_path/genfstab" -U /mnt >>/mnt/etc/fstab
 
   echo "Moving scripts..."
-  cp -rv "$SCRIPT_DIR"/includes/* /mnt/opt/install/includes/
-  cp -rv "$SCRIPT_DIR"/install /mnt/opt/install/.
-  cp -rv "$SCRIPT_DIR"/scripts/* /bin/
-  cp -rv "$SCRIPT_DIR"/includes/utils/* /usr/lib/psi/utils/
-  sudo chmod -R 755 /mnt/opt/install/.
-  sudo chmod -R 755 /bin/
-  sudo chmod -R 755 /usr/lib/psi/utils/
+  cp -rv "$SCRIPT_DIR"/includes/* /mnt/opt/install/includes
+  cp -rv "$SCRIPT_DIR"/install /mnt/opt/install
+  cp -rv "$SCRIPT_DIR"/scripts/* /bin
+  cp -rv "$SCRIPT_DIR"/includes/utils /usr/lib/psi
+  cp -rv "$SCRIPT_DIR"/includes/service /usr/lib/psi
+  sudo chmod -R 755 /mnt/opt/install
+  sudo chmod -R 755 /bin
+  sudo chmod -R 755 /usr/lib/psi/utils
 
   local hostname
   local username
@@ -87,7 +88,7 @@ stage_zero(){
 
   export stage0_packages_str
   export boot_mode
-  # Install chrony and start the serviceF
+  # Install chrony and start the service
   # Setup a time zone
   # List of zones can be obtained from /usr/share/zoneinfo. This comes from tzdata package which should be pre-installed
   # then make a symlink to the zone you want to use to export TZ='America/New_York' set in ~/.profile or ~/.bashrc:

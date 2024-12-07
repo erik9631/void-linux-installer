@@ -1,25 +1,57 @@
 #!/bin/bash
 
 function service(){
+    # Check if we have enough arguments
+    if [[ $# -lt 2 ]]; then
+        echo "Usage: service <|-c|--create |-r|--remove> <service_name>" >&2
+        return 1
+    fi
+
   case "$1" in
-    --create)
+    -c|--create)
+      if [[ ! -d "/etc/sv/$2" ]]; then
+          echo "Service '$2' doesn't exist in /etc/sv/" >&2
+          return 1
+      fi
+
+      if [[ -e "/var/service/$2" ]]; then
+          echo "Service '$2' is already enabled" >&2
+          return 1
+      fi
+
       if ! ln -s "/etc/sv/$2" /var/service/; then
         return 1
       fi
+
+      # Wait a moment for runit to detect the new service
+      echo "Starting service... '$2'" >&2
+      sleep 1
+
       if ! sv up "$2"; then
+        echo "Failed to start service. Removing link..." >&2
         return 1
       fi
     ;;
-    --remove)
+    -r|--remove)
+      if [[ ! -e "/var/service/$2" ]]; then
+          echo "Service '$2' is not enabled" >&2
+          return 1
+      fi
+
       if ! sv down "$2"; then
+        echo "Service failed to stop. Either not running or doesn't exist." >&2
         return 1
       fi
+      echo "Stopping service... '$2'" >&2
+      sleep 1
+
       if ! rm "/var/service/$2"; then
+        echo "Failed to remove service." >&2
         return 1
       fi
     ;;
-    --*)
-      echo "Invalid arguments. Example: service <create | remove> <service_name>" >&2
+    *)
+        echo "Usage: service <|-c|--create |-r|--remove> <service_name>" >&2
     ;;
   esac
 }

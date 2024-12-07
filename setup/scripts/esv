@@ -1,0 +1,5 @@
+#!/bin/bash
+# shellcheck source=../includes/service
+source /usr/lib/psi/service
+
+service "$1" "$2"
