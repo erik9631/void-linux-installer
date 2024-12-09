@@ -22,7 +22,10 @@ source "$SCRIPT_DIR/includes/bootloader"
 source "$SCRIPT_DIR/includes/display"
 
 # shellcheck source=service
-source "$SCRIPT_DIR/includes/cservice"
+source "$SCRIPT_DIR/includes/service"
+
+# shellcheck source=common
+source "$SCRIPT_DIR/includes/common"
 
 stage_zero(){
   # Check if the script is running as root
@@ -56,6 +59,7 @@ stage_zero(){
 
   echo "Generating file system table..."
   "$scripts_path/genfstab" -U /mnt >>/mnt/etc/fstab
+
 
   echo "Moving scripts..."
   cp -rv "$SCRIPT_DIR"/includes/* /mnt/opt/install/includes

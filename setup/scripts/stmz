@@ -5,7 +5,7 @@ source /usr/lib/psi/utils
 function select_time_zone() {
   while true; do
   local timezones
-  readarray -t timezones <<< "$(find /usr/share/zoneinfo -maxdepth 1 -type d -printf '%f\n' | grep -E '^[A-Z]')"
+  readarray -t timezones < <(find /usr/share/zoneinfo -maxdepth 1 -type d -printf '%f\n' | grep -E '^[A-Z]')
   if [[ ${#timezones[@]} -eq 0 ]]; then
       echo "Error: No timezones found" >&2
       return 1
@@ -19,7 +19,7 @@ function select_time_zone() {
 
   local item="${timezones[$selected_index]}"
   local sub_zone
-  readarray -t sub_zone <<< "$(find "/usr/share/zoneinfo/$item" -type f -printf '%f\n')"
+  readarray -t sub_zone < <(find "/usr/share/zoneinfo/$item" -type f -printf '%f\n')
   local selected_sub_zone
   if ! selected_sub_zone=$(select_from_list sub_zone 6); then
     echo "Error: Failed to select sub-zone" >&2

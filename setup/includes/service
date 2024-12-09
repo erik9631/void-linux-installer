@@ -3,8 +3,15 @@
 function service(){
     # Check if we have enough arguments
     if [[ $# -lt 2 ]]; then
-        echo "Usage: service <|-c|--create |-r|--remove> <service_name>" >&2
-        return 1
+        cat << 'EOF'
+Usage: service <|-c|--create |-r|--remove> <service_name>
+
+Options:
+  -c|--create <service_name>  Create a new service
+  -r|--remove <service_name>  Remove a service
+  -l|--list                   List all services
+EOF
+      return 1
     fi
 
   case "$1" in
@@ -28,7 +35,7 @@ function service(){
       sleep 1
 
       if ! sv up "$2"; then
-        echo "Failed to start service. Removing link..." >&2
+        echo "Failed to start service." >&2
         return 1
       fi
     ;;
@@ -50,6 +57,9 @@ function service(){
         return 1
       fi
     ;;
+    -l|--list)
+       find /var/service/ -mindepth 1 -printf "%f\n"
+      ;;
     *)
         echo "Usage: service <|-c|--create |-r|--remove> <service_name>" >&2
     ;;

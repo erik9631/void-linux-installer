@@ -10,6 +10,9 @@ source "$SCRIPT_DIR/includes/stage"
 # shellcheck source=includes/utils
 source "$SCRIPT_DIR/includes/utils"
 
+# shellcheck source=includes/common
+source "$SCRIPT_DIR/includes/common"
+
 args=("$@")
 
 stage=0
@@ -28,6 +31,10 @@ function check_stage(){
 for ((i=0; i<${#args[@]}; i++)); do
   arg="${args[$i]}"
   case "$arg" in
+      --update)
+        copy_scripts
+        exit 0
+        ;;
       --stage)
         i=$((i+1))
         stage="${args[$i]}"
@@ -47,7 +54,7 @@ for ((i=0; i<${#args[@]}; i++)); do
         stage_arg="${args[$i]}"
         i=$((i+1))
         package_manager="${args[$i]}"
-        readarray -t package_list <<< "$(export_package_group "$stage_arg" "$package_manager")"
+        readarray -t package_list < <(export_package_group "$stage_arg" "$package_manager")
         printf "%s\n" "${package_list[@]}"
         exit 0
       ;;
@@ -64,21 +71,6 @@ for ((i=0; i<${#args[@]}; i++)); do
         fi
         exit 0
       ;;
-      --add_hibernate_kernel)
-        # Tells the kernel which swap partition is used for hibernation
-        add_resume_device_to_kernel
-        exit 0
-      ;;
-      --add_hibernate_hook)
-        # The resume hook is used for hibernation
-        add_initramfs_resume_hook
-        if ! grep -qE '^HOOKS=.*resume' /etc/mkinitcpio.conf; then
-          echo "Failed to add resume hook to mkinitcpio.conf" >&2
-          exit 1
-        fi
-        exit 0
-      ;;
-
       --help)
         echo "Usage: $0 [--stage <0,1,2>] [--shared_boot] [--best_display_config] [--handle_internet_connection]"
         exit 0
