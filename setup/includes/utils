@@ -16,30 +16,30 @@ function select_from_list() {
   local current_page=0
   local selected_item_index
   while true; do
-    clear
+    clear >&2
     local selection=0
     local start="$((current_page*max_items))"
     local index=$start
     local end=$((start + max_items < ${#list[@]} ? start + max_items : ${#list[@]}))
 
     while ((index < end)); do
-      echo "$selection ) ${list[$index]}"
+      echo "$selection ) ${list[$index]}" >&2
       selection=$((selection+1))
       index=$((index+1))
     done
 
     if (( current_page < page_count - 1)); then
-      echo "7 ) Next page"
+      echo "7 ) Next page" >&2
     fi
 
-    echo " "
+    echo " " >&2
 
     if (( current_page > 0 )); then
-      echo "8 ) Previous page"
+      echo "8 ) Previous page" >&2
     fi
-    echo "9 ) Exit"
-    echo "Page $((current_page)) / $page_count"
-    read -r -p "Select an option: " selection
+    echo "9 ) Exit" >&2
+    echo "Page $((current_page)) / $((page_count - 1))"
+    read -r -p "Select an option: " selection >&2
     case $selection in
       [0-6])
         local selected_item_index=$((selection + start))
@@ -86,7 +86,7 @@ export -f ask_for_confirmation
 # Function for checking if the user is root
 function check_root_user() {
   if [ "$(id -u)" != "0" ]; then
-    echo "Error: This script must be run as root"
+    echo "Error: This script must be run as root" >&2
     exit 1
   fi
 }
@@ -99,7 +99,7 @@ function get_current_stage_from_var() {
     if [[ -n $stage ]]; then
         echo "$stage"
     else
-        >&2 echo "No stage found."
+        echo "No stage found." >&2
         return 1  # Return an error code if no stage is found.
     fi
 }

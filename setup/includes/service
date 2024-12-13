@@ -1,68 +1,97 @@
 #!/bin/bash
+# TODO Support for Void Linux first boot services
+# you can achieve this by creating the service symlinks in `/etc/runit/runsvdir/default/`. This is the directory that gets copied to `/run/runit/runsvdir/current` on first boot.
 
 function service(){
     # Check if we have enough arguments
-    if [[ $# -lt 2 ]]; then
+    local operation="$1"
+    shift
+    if [[ $# -lt 2 && $operation != "-l" && $operation != "--list" ]]; then
         cat << 'EOF'
 Usage: service <|-c|--create |-r|--remove> <service_name>
 
 Options:
-  -c|--create <service_name>  Create a new service
-  -r|--remove <service_name>  Remove a service
-  -l|--list                   List all services
+  -c|--create <target_dir> <service_name> [up] Create a new service
+  -r|--remove <target_dir> <service_name> Remove a service
+  -l|--list <target_dir>                  List all services
 EOF
       return 1
     fi
 
-  case "$1" in
+  local target_dir="$1"
+  local service_name="$2"
+  local start="$3"
+
+   if [[ -z "$1" ]]; then
+       echo "Error: target directory required for list operation" >&2
+      return 1
+   fi
+
+  if [[ ! -d "$target_dir" ]]; then
+    echo "Error: '$target_dir' is not a directory" >&2
+    return 1
+  fi
+
+  case "$operation" in
     -c|--create)
-      if [[ ! -d "/etc/sv/$2" ]]; then
-          echo "Service '$2' doesn't exist in /etc/sv/" >&2
+      if [[ ! -d "/etc/sv/$service_name" ]]; then
+          echo "Service '$service_name' doesn't exist in /etc/sv/" >&2
+          return 1
+      fi
+      if [[ -e "$target_dir$service_name" ]]; then
+          echo "Service '$service_name' is already enabled" >&2
           return 1
       fi
 
-      if [[ -e "/var/service/$2" ]]; then
-          echo "Service '$2' is already enabled" >&2
-          return 1
-      fi
-
-      if ! ln -s "/etc/sv/$2" /var/service/; then
+      echo "Creating ln $target_dir$service_name">&2
+      if ! ln -s "/etc/sv/$service_name" "$target_dir"; then
         return 1
+      fi
+      if [[ -z "$start" ]]; then
+        return 0
       fi
 
       # Wait a moment for runit to detect the new service
-      echo "Starting service... '$2'" >&2
+      echo "Starting service... '$service_name'" >&2
       sleep 1
 
-      if ! sv up "$2"; then
+      if ! sv up "$service_name"; then
         echo "Failed to start service." >&2
         return 1
       fi
     ;;
     -r|--remove)
-      if [[ ! -e "/var/service/$2" ]]; then
-          echo "Service '$2' is not enabled" >&2
+      if [[ ! -e "$target_dir$service_name" ]]; then
+          echo "Service '$service_name' is not enabled" >&2
           return 1
       fi
 
-      if ! sv down "$2"; then
+      if ! sv down "$service_name"; then
         echo "Service failed to stop. Either not running or doesn't exist." >&2
         return 1
       fi
-      echo "Stopping service... '$2'" >&2
+      echo "Stopping service... '$service_name'" >&2
       sleep 1
 
-      if ! rm "/var/service/$2"; then
+      if ! rm "$target_dir$service_name"; then
         echo "Failed to remove service." >&2
         return 1
       fi
     ;;
     -l|--list)
-       find /var/service/ -mindepth 1 -printf "%f\n"
-      ;;
-    *)
-        echo "Usage: service <|-c|--create |-r|--remove> <service_name>" >&2
+     find "$target_dir" -mindepth 1 -printf "%f\n"
     ;;
+    *)
+    cat << 'EOF'
+Usage: service <|-c|--create |-r|--remove> <service_name>
+
+Options:
+  -c|--create <target_dir> <service_name> <up> Create a new service
+  -r|--remove <target_dir> <service_name> Remove a service
+  -l|--list <target_dir>                  List all services
+EOF
+    return 1
+  ;;
   esac
 }
 

@@ -1,8 +1,6 @@
 #!/bin/bash
 SCRIPT_DIR=$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)
 export SCRIPT_DIR
-LIVE_PATH="/run/initramfs/live"
-export LIVE_PATH
 
 # shellcheck source=includes/stage
 source "$SCRIPT_DIR/includes/stage"
@@ -32,7 +30,8 @@ for ((i=0; i<${#args[@]}; i++)); do
   arg="${args[$i]}"
   case "$arg" in
       --update)
-        copy_scripts
+        copy_scripts /bin/
+        copy_scripts /usr/lib/
         exit 0
         ;;
       --stage)

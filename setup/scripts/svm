@@ -2,4 +2,4 @@
 # shellcheck source=../includes/service
 source /usr/lib/psi/service
 
-service "$1" "$2"
+service "$1" /var/service/ "$2" up

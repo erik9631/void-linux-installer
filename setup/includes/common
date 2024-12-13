@@ -1,15 +1,21 @@
 #!/bin/bash
 function copy_scripts() {
   local script_file_names
+  local bin_dir=$1
+  local lib_dir=$2
+  # Ensure target_dir ends with a forward slash
+  bin_dir="${bin_dir%/}/"  # Remove trailing slash if exists, then add one
+  lib_dir="${lib_dir%/}/"  # Remove trailing slash if exists, then add one
+
   readarray -t script_file_names < <(find "$SCRIPT_DIR"/scripts -type f -printf '%f\n')
 
   for f in "${script_file_names[@]}"; do
-    cp -rv "$SCRIPT_DIR/scripts/$f" "/bin/$f"
-    chmod 755 "/bin/$f"
+    cp -rv "$SCRIPT_DIR/scripts/$f" "$bin_dir$f"
+    chmod 755 "$bin_dir$f"
   done
 
-  mkdir -p /usr/lib/psi/
-  cp -rv "$SCRIPT_DIR"/includes/utils /usr/lib/psi/utils
-  cp -rv "$SCRIPT_DIR"/includes/service /usr/lib/psi/service
-  chmod -R 755 /usr/lib/psi
+  mkdir -p "$lib_dir"psi/
+  cp -rv "$SCRIPT_DIR"/includes/utils "$lib_dir"psi/utils
+  cp -rv "$SCRIPT_DIR"/includes/service "$lib_dir"psi/service
+  chmod -R 755 "$lib_dir"psi/
 }

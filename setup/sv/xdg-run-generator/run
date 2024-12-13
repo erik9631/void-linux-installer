@@ -6,4 +6,4 @@ for i in $(awk -F: '$3 >= 1000 {print $3}' /etc/passwd); do
     chmod 700 /run/user/"$i"
 done
 
-sv once xdg-runtime-generator
+sv once xdg-run-generator

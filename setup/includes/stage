@@ -49,27 +49,30 @@ stage_zero(){
     echo "/mnt is not mounted."
     exit 1
   fi
-  local scripts_path="${LIVE_PATH}/scripts/"
+  local tar_path="$SCRIPT_DIR/../system.tar"
 
   # Install the tarbar
-  if ! tar xvf "${LIVE_PATH}/system.tar" -C /mnt; then
+  if ! tar xvf "$tar_path" -C /mnt; then
     echo "Failed to extract system.tar." >&2
     exit 1
   fi
 
   echo "Generating file system table..."
-  "$scripts_path/genfstab" -U /mnt >>/mnt/etc/fstab
+  "$SCRIPT_DIR"/scripts/genfstab -U /mnt >>/mnt/etc/fstab
+  copy_scripts /mnt/bin/ /mnt/usr/lib/
 
+  echo "Copying services..."
+  if ! cp -rfv "$SCRIPT_DIR"/sv/* /mnt/etc/sv/; then
+    echo "Failed to copy services to /etc/sv/" >&2
+    exit 1
+  fi
 
-  echo "Moving scripts..."
-  cp -rv "$SCRIPT_DIR"/includes/* /mnt/opt/install/includes
-  cp -rv "$SCRIPT_DIR"/install /mnt/opt/install
-  cp -rv "$SCRIPT_DIR"/scripts/* /bin
-  cp -rv "$SCRIPT_DIR"/includes/utils /usr/lib/psi
-  cp -rv "$SCRIPT_DIR"/includes/service /usr/lib/psi
-  sudo chmod -R 755 /mnt/opt/install
-  sudo chmod -R 755 /bin
-  sudo chmod -R 755 /usr/lib/psi/utils
+  echo "Copying fonts..."
+  mkdir -p /mnt/usr/share/fonts/
+  if ! cp -rfv "$SCRIPT_DIR"/../fonts/* /mnt/usr/share/fonts/; then
+    echo "Failed to copy fonts to /mnt/usr/share/fonts/" >&2
+    exit 1
+  fi
 
   local hostname
   local username
@@ -109,7 +112,7 @@ stage_zero(){
   # mkdir -p /etc/alsa/conf.d
   # ln -s /usr/share/alsa/alsa.conf.d/50-pipewire.conf /etc/alsa/conf.d
   # ln -s /usr/share/alsa/alsa.conf.d/99-pipewire-default.conf /etc/alsa/conf.d
-  # insstall mesa-dri vulkan-loader (needed by wayfire)
+  # install mesa-dri vulkan-loader (needed by wayfire)
   # install wayfire
   # Instal alacritty
   # Install nerd-fonts
@@ -120,14 +123,8 @@ stage_zero(){
     xbps-install -uy
     xbps-install -y base-system
     xbps-remove -y base-container-full
-    if [[ -n \"\${stage0_packages_str}\" ]]; then
-      readarray -t stage0_packages <<< \"\${stage0_packages_str}\"
-      echo 'Installing basic packages' >&2
-          if ! install_xbps_packages \"\${stage0_packages[@]}\"; then
-              echo 'Failed to install xbps packages' >&2
-              exit 1
-          fi
-    fi
+    xbps-install -y fontconfig
+    fc-cache -fv
 
     echo \"\$hostname\" > /etc/hostname
     echo \"root:\$password\" | chpasswd -c SHA512
@@ -137,6 +134,7 @@ stage_zero(){
     echo \"\$username:\$password\" | chpasswd -c SHA512
     usermod -aG wheel \"\$username\"
     usermod -aG audio \"\$username\"
+    usermod -aG video \"\$username\"
     sed -i '/^#\s*%wheel ALL=(ALL:ALL) NOPASSWD: ALL/s/^# //' /etc/sudoers
 
     echo 'Preparing grub...'
@@ -149,6 +147,50 @@ stage_zero(){
         echo 'xbps-reconfigure failed' >&2
         exit 1
     fi
+
+    echo 'Installing packages...'>&2
+    if [[ -n \"\${stage0_packages_str}\" ]]; then
+      readarray -t stage0_packages <<< \"\${stage0_packages_str}\"
+      count=0
+      echo 'Installing basic packages' >&2
+      while ((count < 5)); do
+        if ! install_xbps_packages \"\${stage0_packages[@]}\"; then
+            echo 'Failed to install xbps packages...retrying' >&2
+            ((count++))
+            continue
+        fi
+        echo 'Successfully installed packages' >&2
+        break
+      done
+    fi
+
+    if ((count == 5)); then
+      echo 'Failed to install packages. Check internet connection and try again.' >&2
+      exit 1
+    fi
+
+    echo 'Performing services setup...'>&2
+    sleep 1
+    service -c /etc/runit/runsvdir/default/ dbus || true
+    service -c /etc/runit/runsvdir/default/ dhcpcd || true
+    service -c /etc/runit/runsvdir/default/ chronyd || true
+    service -c /etc/runit/runsvdir/default/ tlp || true
+    service -c /etc/runit/runsvdir/default/ rtkit || true
+    service -c /etc/runit/runsvdir/default/ seatd || true
+    service -c /etc/runit/runsvdir/default/ wpa_supplicant || true
+    service -c /etc/runit/runsvdir/default/ xdg-run-generator || true
+
+    if ! mkdir -p /etc/pipewire/pipewire.conf.d; then
+      echo \"Failed to create pipewire folder\"
+    fi
+
+    if ! ln -s /usr/share/examples/pipewire/20-pipewire-pulse.conf /etc/pipewire/pipewire.conf.d/; then
+      echo \"Pipewire configuration failed to link\"
+    fi
+
+    mkdir -p /etc/alsa/conf.d
+    ln -s /usr/share/alsa/alsa.conf.d/50-pipewire.conf /etc/alsa/conf.d
+    ln -s /usr/share/alsa/alsa.conf.d/99-pipewire-default.conf /etc/alsa/conf.d
 
     echo 'Preparing for stage 1...'
     mkdir -p /var/install/

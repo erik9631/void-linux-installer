@@ -156,6 +156,8 @@ function handle_internet_connection() {
     fi
   done
 
+  echo " " >&2
+
   local retries=15
   while (( ! is_internet_connected && retries > 0 )); do
       echo 'Waiting for network to stabilize...' >&2

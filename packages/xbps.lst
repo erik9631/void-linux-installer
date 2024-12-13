@@ -1,3 +1,19 @@
+[stage0]
+dbus
+tlp
+rtkit
+pipewire
+alsa-pipewire
+seatd
+chrony
+mesa-dri
+vulkan-loader
+wayfire
+alacritty
+neovim
+btop
+
+
 [stage1]
 wayland # Display server
 

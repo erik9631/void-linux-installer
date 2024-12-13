@@ -38,13 +38,13 @@ function sync_datetime(){
   fi
 
   if ! grep -E "export TZ='$selected_time_zone'" "$HOME"/.bashrc; then
-    echo "export TZ=$selected_time_zone" >> "$HOME"/.bashrc
+    echo "export TZ='$selected_time_zone'" >> "$HOME"/.bashrc
     echo "New time set to to $selected_time_zone" >&2
     return 0
   fi
-  sed -i "s/export TZ=.*/export TZ='$selected_time_zone'/" "$HOME"/.bashrc
-  echo "Time zone changed to $selected_time_zone" >&2
-  export TZ="$selected_time_zone"
+  sed -i "s|export TZ=.*|export TZ='$selected_time_zone'|" "$HOME"/.bashrc
+  echo "Time zone changed to '$selected_time_zone'" >&2
+  export TZ="'$selected_time_zone'"
   return 0
 }
 
