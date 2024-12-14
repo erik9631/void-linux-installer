@@ -53,7 +53,7 @@ EOF
 
       # Wait a moment for runit to detect the new service
       echo "Starting service... '$service_name'" >&2
-      sleep 1
+      sleep 4
 
       if ! sv up "$service_name"; then
         echo "Failed to start service." >&2
@@ -71,7 +71,7 @@ EOF
         return 1
       fi
       echo "Stopping service... '$service_name'" >&2
-      sleep 1
+      sleep 4
 
       if ! rm "$target_dir$service_name"; then
         echo "Failed to remove service." >&2

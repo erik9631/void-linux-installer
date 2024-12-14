@@ -13,10 +13,10 @@ function export_package_group(){
 export -f export_package_group
 
 function install_xbps_packages() {
-  local group_name
-  local package_list=("$@")
-  if ! xbps-install -y "${package_list[@]}"; then
-    echo "Failed to install packages from group $group_name" >&2
+  local -n package_list=$1
+  local root=$2
+  if ! xbps-install -y -r "$root" "${package_list[@]}"; then
+    echo "Failed to install packages" >&2
     return 1
   fi
 }

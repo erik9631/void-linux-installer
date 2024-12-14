@@ -9,8 +9,8 @@ source "$SCRIPT_DIR/includes/network"
 # shellcheck source=utils
 source "$SCRIPT_DIR/includes/utils"
 
-# shellcheck source=copy
-source "$SCRIPT_DIR/includes/copy"
+# shellcheck source=configs
+source "$SCRIPT_DIR/includes/configs"
 
 # shellcheck source=package_installer
 source "$SCRIPT_DIR/includes/package_installer"
@@ -81,9 +81,8 @@ stage_zero(){
   read -p 'Set your hostname: ' hostname
   read -p 'Set your username: ' username
   read -sp 'Set your root password: ' password
-  echo ""
+  echo " " >&2
 
-  export hostname
   export password
   export username
 
@@ -93,7 +92,6 @@ stage_zero(){
   boot_mode=$(get_boot_mode)
   stage0_packages_str="$(export_package_group "stage0" "xbps")"
 
-  export stage0_packages_str
   export boot_mode
   # Install chrony and start the service
   # Setup a time zone
@@ -116,26 +114,32 @@ stage_zero(){
   # install wayfire
   # Instal alacritty
   # Install nerd-fonts
+  # Copy the wayfire inis
+  # Set XDG_RUNTIME_DIR into the profile --- make a util function for this as this is common
 
+  copy_wpa_supplicant_conf
 
   x_chroot /mnt /bin/bash -c "
-    xbps-install -Suy xbps
-    xbps-install -uy
-    xbps-install -y base-system
-    xbps-remove -y base-container-full
-    xbps-install -y fontconfig
-    fc-cache -fv
-
-    echo \"\$hostname\" > /etc/hostname
-    echo \"root:\$password\" | chpasswd -c SHA512
-
-    echo 'Setting up new user...'
-    useradd -m \"\$username\"
-    echo \"\$username:\$password\" | chpasswd -c SHA512
-    usermod -aG wheel \"\$username\"
-    usermod -aG audio \"\$username\"
-    usermod -aG video \"\$username\"
-    sed -i '/^#\s*%wheel ALL=(ALL:ALL) NOPASSWD: ALL/s/^# //' /etc/sudoers
+    if ! xbps-install -Suy xbps; then
+        echo 'Failed to update xbps' >&2
+        exit 1
+    fi
+    if ! xbps-install -uy; then
+        echo 'Failed to update system' >&2
+        exit 1
+    fi
+    if ! xbps-install -y base-system; then
+        echo 'Failed to install base system' >&2
+        exit 1
+    fi
+    if ! xbps-remove -y base-container-full; then
+        echo 'Failed to remove base-container-full' >&2
+        exit 1
+    fi
+    if ! xbps-install -y fontconfig; then
+        echo 'Failed to install fontconfig' >&2
+        exit 1
+    fi
 
     echo 'Preparing grub...'
     if ! install_grub \"\$boot_mode\"; then
@@ -147,63 +151,74 @@ stage_zero(){
         echo 'xbps-reconfigure failed' >&2
         exit 1
     fi
-
-    echo 'Installing packages...'>&2
-    if [[ -n \"\${stage0_packages_str}\" ]]; then
-      readarray -t stage0_packages <<< \"\${stage0_packages_str}\"
-      count=0
-      echo 'Installing basic packages' >&2
-      while ((count < 5)); do
-        if ! install_xbps_packages \"\${stage0_packages[@]}\"; then
-            echo 'Failed to install xbps packages...retrying' >&2
-            ((count++))
-            continue
-        fi
-        echo 'Successfully installed packages' >&2
-        break
-      done
-    fi
-
-    if ((count == 5)); then
-      echo 'Failed to install packages. Check internet connection and try again.' >&2
-      exit 1
-    fi
-
-    echo 'Performing services setup...'>&2
-    sleep 1
-    service -c /etc/runit/runsvdir/default/ dbus || true
-    service -c /etc/runit/runsvdir/default/ dhcpcd || true
-    service -c /etc/runit/runsvdir/default/ chronyd || true
-    service -c /etc/runit/runsvdir/default/ tlp || true
-    service -c /etc/runit/runsvdir/default/ rtkit || true
-    service -c /etc/runit/runsvdir/default/ seatd || true
-    service -c /etc/runit/runsvdir/default/ wpa_supplicant || true
-    service -c /etc/runit/runsvdir/default/ xdg-run-generator || true
-
-    if ! mkdir -p /etc/pipewire/pipewire.conf.d; then
-      echo \"Failed to create pipewire folder\"
-    fi
-
-    if ! ln -s /usr/share/examples/pipewire/20-pipewire-pulse.conf /etc/pipewire/pipewire.conf.d/; then
-      echo \"Pipewire configuration failed to link\"
-    fi
-
-    mkdir -p /etc/alsa/conf.d
-    ln -s /usr/share/alsa/alsa.conf.d/50-pipewire.conf /etc/alsa/conf.d
-    ln -s /usr/share/alsa/alsa.conf.d/99-pipewire-default.conf /etc/alsa/conf.d
-
-    echo 'Preparing for stage 1...'
-    mkdir -p /var/install/
-    touch /var/install/stage1
   "
 
-  echo 'Stage 0 complete, rebooting into the system to run stage 1...'
+  echo 'Installing packages...'>&2
+  if [[ -n "${stage0_packages_str}" ]]; then
+    local stage0_packages
+    local count=0
+    readarray -t stage0_packages <<< "${stage0_packages_str}"
+    echo 'Installing basic packages' >&2
+    while ((count < 5)); do
+    if ! install_xbps_packages stage0_packages /mnt; then
+          echo 'Failed to install xbps packages...retrying' >&2
+          ((count++))
+          continue
+      fi
+      echo 'Successfully installed packages' >&2
+      break
+    done
+  fi
+
+  if ((count == 5)); then
+    echo 'Failed to install packages. Check internet connection and try again.' >&2
+    exit 1
+  fi
+
+  if ! mkdir -p /mnt/etc/pipewire/pipewire.conf.d; then
+    echo "Failed to create pipewire folder" >&2
+  fi
+
+  if ! ln -s /mnt/usr/share/examples/pipewire/20-pipewire-pulse.conf /mnt/etc/pipewire/pipewire.conf.d/; then
+    echo "Pipewire configuration failed to link"
+  fi
+
+  mkdir -p /mnt/etc/alsa/conf.d
+  ln -s /mnt/usr/share/alsa/alsa.conf.d/50-pipewire.conf /mnt/etc/alsa/conf.d
+  ln -s /mnt/usr/share/alsa/alsa.conf.d/99-pipewire-default.conf /mnt/etc/alsa/conf.d
+
+  echo "Setting up hostname" >&2
+  echo "$hostname" > /mnt/etc/hostname
+
+  x_chroot /mnt /bin/bash -c "
+    echo \"root:\$password\" | chpasswd -c SHA512
+
+    echo 'Setting up new user...' >&2
+    useradd -m \"\$username\"
+    echo \"\$username:\$password\" | chpasswd -c SHA512
+    usermod -aG wheel \"\$username\"
+    usermod -aG audio \"\$username\"
+    usermod -aG video \"\$username\"
+    usermod -aG _seatd \"\$username\"
+    sed -i '/^#\s*%wheel ALL=(ALL:ALL) NOPASSWD: ALL/s/^# //' /etc/sudoers
+
+    echo 'Performing services setup...'>&2
+    for svc in dbus dhcpcd chronyd tlp rtkit seatd xdg-run-generator; do
+        if ! service -c /etc/runit/runsvdir/default/ \$svc; then
+            echo \"Warning: Failed to enable \$svc\" >&2
+        fi
+    done
+  "
+
+  map_string  "export XDG_RUNTIME_DIR=" "export XDG_RUNTIME_DIR=/run/user/\$(id -u)" /mnt/etc/profile.d/bash.sh
+  copy_wayfire_ini "/mnt/home/$username"
+
+  echo 'Install complete. Rebooting into the system'
   sleep 5
-  shutdown -r now
+  # shutdown -r now
 }
 
 stage_one(){
-
   if ! is_internet_connected; then
     if ! handle_internet_connection; then
       echo "Internet is not connected. Please connect to the internet and run this script again with --stage 1."
@@ -217,7 +232,7 @@ stage_one(){
   readarray -t stage1_packages <<< "$(export_package_group "stage1" "pacman")"
 
   if ! install_xbps_packages "${stage1_packages[@]}"; then
-    echo "Failed to install pacman packages"
+    echo "Failed to install xbps packages"
     exit 1
   fi
 
