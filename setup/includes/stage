@@ -200,7 +200,7 @@ stage_zero(){
     usermod -aG audio \"\$username\"
     usermod -aG video \"\$username\"
     usermod -aG _seatd \"\$username\"
-    sed -i '/^#\s*%wheel ALL=(ALL:ALL) NOPASSWD: ALL/s/^# //' /etc/sudoers
+    sed -i '/^#\s*%wheel ALL=(ALL:ALL) ALL/s/^# //' /etc/sudoers
 
     echo 'Performing services setup...'>&2
     for svc in dbus dhcpcd chronyd tlp rtkit seatd xdg-run-generator; do
