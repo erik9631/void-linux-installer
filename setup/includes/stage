@@ -114,8 +114,22 @@ stage_zero(){
   # install wayfire
   # Instal alacritty
   # Install nerd-fonts
-  # Copy the wayfire inis
+  # Copy the wayfire ini
   # Set XDG_RUNTIME_DIR into the profile --- make a util function for this as this is common
+  ## For apps
+  # change exec line in /usr/share/applications/alacritty.desktop and btop and any other console app to launch as alacritty -e <command>
+  # Install wl-clipboard
+  # Install wdisplays --- Display manager
+  # Install waybar
+  # install git
+  # install fuzzel
+  # base-devel for gcc toolchain
+  # install p7zip
+  # install nnn
+  # For nnn edit the desktop file so it launches in alacritty
+  # Copy nvim configs
+  ## TODO
+  # Display manager not saving config
 
   copy_wpa_supplicant_conf
 
@@ -215,105 +229,5 @@ stage_zero(){
 
   echo 'Install complete. Rebooting into the system'
   sleep 5
-  # shutdown -r now
-}
-
-stage_one(){
-  if ! is_internet_connected; then
-    if ! handle_internet_connection; then
-      echo "Internet is not connected. Please connect to the internet and run this script again with --stage 1."
-      exit 1
-    fi
-  fi
-
-  sudo pacman -Syy
-  # Install file manager
-  local stage1_packages
-  readarray -t stage1_packages <<< "$(export_package_group "stage1" "pacman")"
-
-  if ! install_xbps_packages "${stage1_packages[@]}"; then
-    echo "Failed to install xbps packages"
-    exit 1
-  fi
-
-  echo "Installing additional model specific packages..."
-  if ! install_model_packages; then
-    echo "Failed to install model specific packages."
-    if ! ask_for_confirmation "Manual installation required. Do you want to continue?"; then
-      echo "Aborting installation."
-      exit 1
-    fi
-  fi
-
-  if ! install_yay_for_all; then
-    echo "yay installation failed"
-    exit 1
-  fi
-
-  echo "Updating stage file..."
-  sudo mv /var/install/stage1 /var/install/stage2
-
-  echo "All stage1 installations are complete."
-  echo "Proceeding to stage2..."
-  stage_two
-}
-
-# User specific services
-stage_two(){
-
-
-
-  local stage2_yay_packages
-  readarray -t stage2_yay_packages <<< "$(export_package_group "stage2" "yay")"
-  if ! install_yay_packages "${stage2_yay_packages[@]}"; then
-    echo "installing yay packages failed" >&2
-    exit 1
-  fi
-
-  if ! copy_bin; then
-    echo "Copying scripts failed" >&2
-    exit 1
-  fi
-
-  if ! copy_rofi_usr_theme; then
-    echo "Copying rofi user theme failed" >&2
-    exit 1
-  fi
-
-  if ! copy_dots; then
-    echo "Copying modrpobe failed." >&2
-    exit 1
-  fi
-
-  if ! apply_gtk_theme; then
-    echo "Applying gtk theme failed." >&2
-    exit 1
-  fi
-
-    # The resume hook is used for hibernation
-  if ! add_initramfs_resume_hook; then
-    echo "Failed to add resume hook to mkinitcpio.conf" >&2
-    exit 1
-  fi
-
-  if ! add_mdns_to_nsswitch; then
-    echo "Failed to add mdns to nsswitch.conf" >&2
-    exit 1
-  fi
-
-  systemctl enable --user --now pipewire
-  systemctl enable --user --now pipewire-pulse
-  systemctl enable --user --now wireplumber
-  systemctl enable --now bluetooth
-  systemctl enable tlp
-  systemctl enable --now avahi-daemon
-  systemctl enable --now cups
-
-  # Tells the kernel which swap partition is used for hibernation
-  add_resume_device_to_kernel
-
-  echo "Performing cleanup..."
-  sudo rm -rf /opt/install
-  sudo rm -rf /var/install
-  exit 0
+  shutdown -r now
 }
