@@ -225,7 +225,7 @@ stage_zero(){
   "
 
   map_string  "export XDG_RUNTIME_DIR=" "export XDG_RUNTIME_DIR=/run/user/\$(id -u)" /mnt/etc/profile.d/bash.sh
-  copy_wayfire_ini "/mnt/home/$username"
+  copy_configs "/mnt/home/$username" "$username"
 
   echo 'Install complete. Rebooting into the system'
   sleep 5

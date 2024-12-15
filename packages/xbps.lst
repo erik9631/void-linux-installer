@@ -12,6 +12,13 @@ wayfire
 alacritty
 neovim
 btop
+wl-clipboard
+wdisplays
+git
+fuzzel
+base-devel
+p7zip
+nnn
 
 
 [stage1]

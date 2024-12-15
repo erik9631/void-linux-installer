@@ -11,12 +11,14 @@ function copy_bin() {
 export -f copy_bin
 
 
-function copy_wayfire_ini(){
+function copy_configs(){
   local user_home=$1
+  local user_name=$2
   mkdir -p "$user_home"/.config
-  cp -v "$SCRIPT_DIR"/../config/wayfire.ini "$user_home"/.config/wayfire.ini
+  chown -R "$user_name":"$user_name" "$user_home"/.config
+  cp -rv "$SCRIPT_DIR"/../config/* "$user_home"/.config/
 }
-export -f copy_wayfire_ini
+export -f copy_configs
 
 function copy_wpa_supplicant_conf(){
   local src=/etc/wpa_supplicant/wpa_supplicant.conf
@@ -35,31 +37,3 @@ function copy_wpa_supplicant_conf(){
   fi
 }
 export -f copy_wpa_supplicant_conf
-
-# Copy cappuccino rofi theme
-function copy_rofi_usr_theme(){
-  # .config part will be copied along with everything else later
-  if ! sudo cp -rfvT "$SCRIPT_DIR"/files/system/usr/share/rofi/themes/ /usr/share/rofi/themes/; then
-    echo "Failed to copy rofi theme to /usr/share/rofi/themes/" >&2
-    return 1
-  fi
-}
-export -f copy_rofi_usr_theme
-
-function copy_dots(){
-  if ! sudo cp -rfvT "$SCRIPT_DIR"/files/system/.config/ "$HOME"/.config/; then
-    echo "Failed to copy dotfiles to $HOME/.config/" >&2
-    return 1
-  fi
-
-  if ! sudo chown -R "$USER" "$HOME"/.config/; then
-    echo "Failed to chown $HOME/.config/" >&2
-    return 1
-  fi
-
-  if ! sudo cp -rfv "$SCRIPT_DIR"/files/system/.config/ /etc/skel/; then
-    echo "Failed to copy dotfiles to /etc/skel" >&2
-    return 1
-  fi
-}
-export -f copy_dots
