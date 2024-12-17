@@ -1,0 +1,29 @@
+call plug#begin()
+    Plug 'nvim-tree/nvim-web-devicons' "Icons
+    Plug 'nvim-tree/nvim-tree.lua' "Folder sidebar
+    Plug 'https://github.com/kylechui/nvim-surround.git' "Surrounding blocks of text with [ ( tags and stuff
+    Plug 'nvim-lua/plenary.nvim'
+    Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
+    Plug 'nvim-telescope/telescope.nvim',
+    Plug 'nvim-telescope/telescope-ui-select.nvim'
+    Plug 'williamboman/mason.nvim'
+    Plug 'williamboman/mason-lspconfig.nvim'
+    Plug 'nvim-lualine/lualine.nvim'
+    Plug 'neovim/nvim-lspconfig'
+    Plug 'AstroNvim/astrotheme'
+    Plug 'https://github.com/nvimtools/none-ls.nvim.git'
+    Plug 'goolord/alpha-nvim'
+    Plug 'hrsh7th/nvim-cmp'
+    Plug 'hrsh7th/cmp-nvim-lsp'
+    Plug 'hrsh7th/cmp-path'
+    Plug 'akinsho/toggleterm.nvim'
+    Plug 'mfussenegger/nvim-dap'
+    Plug 'mfussenegger/nvim-dap'
+    Plug 'nvim-neotest/nvim-nio'
+    Plug 'rcarriga/nvim-dap-ui'
+    Plug 'NeogitOrg/neogit'
+call plug#end()
+
+lua require('config.keymaps')
+lua require('plugins').setup()
+lua require('config.options')

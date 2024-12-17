@@ -127,6 +127,8 @@ stage_zero(){
   # install p7zip
   # install nnn
   # For nnn edit the desktop file so it launches in alacritty
+  # /etc/udev/rules.d/90-backlight.rules --- for backlight. We need a rule so we can write to the backlight device
+  # ACTION=="add", SUBSYSTEM=="backlight", GROUP="video", MODE="0664"
   # Copy nvim configs
   ## TODO
   # Display manager not saving config
@@ -188,23 +190,22 @@ stage_zero(){
     echo 'Failed to install packages. Check internet connection and try again.' >&2
     exit 1
   fi
-
-  if ! mkdir -p /mnt/etc/pipewire/pipewire.conf.d; then
-    echo "Failed to create pipewire folder" >&2
-  fi
-
-  if ! ln -s /mnt/usr/share/examples/pipewire/20-pipewire-pulse.conf /mnt/etc/pipewire/pipewire.conf.d/; then
-    echo "Pipewire configuration failed to link"
-  fi
-
-  mkdir -p /mnt/etc/alsa/conf.d
-  ln -s /mnt/usr/share/alsa/alsa.conf.d/50-pipewire.conf /mnt/etc/alsa/conf.d
-  ln -s /mnt/usr/share/alsa/alsa.conf.d/99-pipewire-default.conf /mnt/etc/alsa/conf.d
-
   echo "Setting up hostname" >&2
   echo "$hostname" > /mnt/etc/hostname
 
   x_chroot /mnt /bin/bash -c "
+    if ! mkdir -p /etc/pipewire/pipewire.conf.d; then
+      echo \"Failed to create pipewire folder\" >&2
+    fi
+
+    if ! ln -s /usr/share/examples/pipewire/20-pipewire-pulse.conf /etc/pipewire/pipewire.conf.d/; then
+      echo \"Pipewire configuration failed to link\"
+    fi
+
+    mkdir -p /etc/alsa/conf.d
+    ln -s /usr/share/alsa/alsa.conf.d/50-pipewire.conf /etc/alsa/conf.d
+    ln -s /usr/share/alsa/alsa.conf.d/99-pipewire-default.conf /etc/alsa/conf.d
+
     echo \"root:\$password\" | chpasswd -c SHA512
 
     echo 'Setting up new user...' >&2
@@ -224,10 +225,17 @@ stage_zero(){
     done
   "
 
-  map_string  "export XDG_RUNTIME_DIR=" "export XDG_RUNTIME_DIR=/run/user/\$(id -u)" /mnt/etc/profile.d/bash.sh
   copy_configs "/mnt/home/$username" "$username"
+
+  map_string  "export XDG_RUNTIME_DIR=" "export XDG_RUNTIME_DIR=/run/user/\$(id -u)" /mnt/etc/profile.d/bash.sh
+  map_string "Exec=nnn" "Exec=alacritty -e nnn" /mnt/usr/share/applications/nnn.desktop
+  map_string "Exec=nvim %F" "Exec=alacritty -e nvim %F" /mnt/usr/share/applications/nvim.desktop
+  mkdir -p /etc/udev/rules.d/
+  echo 'ACTION=="add", SUBSYSTEM=="backlight", GROUP="video", MODE="0664"' > /etc/udev/rules.d/90-backlight.rules
+  export_theme "Dracula" "/mnt/home/$username"
+  set_theme "Dracula"
 
   echo 'Install complete. Rebooting into the system'
   sleep 5
-  shutdown -r now
+  # shutdown -r now
 }

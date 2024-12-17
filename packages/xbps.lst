@@ -8,7 +8,9 @@ seatd
 chrony
 mesa-dri
 vulkan-loader
+light
 wayfire
+waybar
 alacritty
 neovim
 btop
@@ -16,9 +18,12 @@ wl-clipboard
 wdisplays
 git
 fuzzel
+pavucontrol
 base-devel
 p7zip
 nnn
+nwg-look
+firefox
 
 
 [stage1]
