@@ -230,6 +230,8 @@ stage_zero(){
   map_string  "export XDG_RUNTIME_DIR=" "export XDG_RUNTIME_DIR=/run/user/\$(id -u)" /mnt/etc/profile.d/bash.sh
   map_string "Exec=nnn" "Exec=alacritty -e nnn" /mnt/usr/share/applications/nnn.desktop
   map_string "Exec=nvim %F" "Exec=alacritty -e nvim %F" /mnt/usr/share/applications/nvim.desktop
+  map_string "Exec=btop" "Exec=alacritty -e btop" /mnt/usr/share/applications/btop.desktop
+
   mkdir -p /etc/udev/rules.d/
   echo 'ACTION=="add", SUBSYSTEM=="backlight", GROUP="video", MODE="0664"' > /etc/udev/rules.d/90-backlight.rules
   export_theme "Dracula" "/mnt/home/$username"
