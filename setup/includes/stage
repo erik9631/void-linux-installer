@@ -130,6 +130,7 @@ stage_zero(){
   # /etc/udev/rules.d/90-backlight.rules --- for backlight. We need a rule so we can write to the backlight device
   # ACTION=="add", SUBSYSTEM=="backlight", GROUP="video", MODE="0664"
   # Copy nvim configs
+  # Use BTRFS for testing
   ## TODO
   # Display manager not saving config
 
@@ -198,16 +199,27 @@ stage_zero(){
       echo \"Failed to create pipewire folder\" >&2
     fi
 
+    if ! ln -s /usr/share/examples/wireplumber/10-wireplumber.conf /etc/pipewire/pipewire.conf.d/; then
+      echo \"WirePlumber configuration failed to link\" >&2
+    fi
+
     if ! ln -s /usr/share/examples/pipewire/20-pipewire-pulse.conf /etc/pipewire/pipewire.conf.d/; then
       echo \"Pipewire configuration failed to link\"
     fi
 
-    mkdir -p /etc/alsa/conf.d
-    ln -s /usr/share/alsa/alsa.conf.d/50-pipewire.conf /etc/alsa/conf.d
-    ln -s /usr/share/alsa/alsa.conf.d/99-pipewire-default.conf /etc/alsa/conf.d
+    if ! mkdir -p /etc/alsa/conf.d; then
+      echo \"Failed to create alsa config directory\" >&2
+    fi
+
+    if ! ln -s /usr/share/alsa/alsa.conf.d/50-pipewire.conf /etc/alsa/conf.d/; then
+      echo \"Failed to link ALSA pipewire config\" >&2
+    fi
+
+    if ! ln -s /usr/share/alsa/alsa.conf.d/99-pipewire-default.conf /etc/alsa/conf.d/; then
+      ln -s /usr/share/alsa/alsa.conf.d/99-pipewire-default.conf /etc/alsa/conf.d
+    fi
 
     echo \"root:\$password\" | chpasswd -c SHA512
-
     echo 'Setting up new user...' >&2
     useradd -m \"\$username\"
     echo \"\$username:\$password\" | chpasswd -c SHA512
@@ -215,7 +227,7 @@ stage_zero(){
     usermod -aG audio \"\$username\"
     usermod -aG video \"\$username\"
     usermod -aG _seatd \"\$username\"
-    sed -i '/^#\s*%wheel ALL=(ALL:ALL) ALL/s/^# //' /etc/sudoers
+    sed -i '/^#\s*%wheel ALL=(ALLd:ALL) ALL/s/^# //' /etc/sudoers
 
     echo 'Performing services setup...'>&2
     for svc in dbus dhcpcd chronyd tlp rtkit seatd xdg-run-generator; do
