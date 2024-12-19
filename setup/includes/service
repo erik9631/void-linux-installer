@@ -2,6 +2,24 @@
 # TODO Support for Void Linux first boot services
 # you can achieve this by creating the service symlinks in `/etc/runit/runsvdir/default/`. This is the directory that gets copied to `/run/runit/runsvdir/current` on first boot.
 
+function wait_for_service_recognition() {
+    local service_name="$1"
+    local max_attempts=20  # Maximum number of attempts (adjust as needed)
+    local attempt=0
+
+    while (( attempt < max_attempts )); do
+        if sv status "$service_name" >/dev/null 2>&1; then
+            return 0  # Service is recognized
+        fi
+        ((attempt++))
+        sleep 0.5    # Short sleep between checks
+    done
+
+    echo "Timeout waiting for service $service_name to be recognized" >&2
+    return 1
+}
+export -f wait_for_service_recognition
+
 function service(){
     # Check if we have enough arguments
     local operation="$1"
@@ -53,7 +71,7 @@ EOF
 
       # Wait a moment for runit to detect the new service
       echo "Starting service... '$service_name'" >&2
-      sleep 4
+      wait_for_service_recognition "$service_name"
 
       if ! sv up "$service_name"; then
         echo "Failed to start service." >&2
@@ -71,7 +89,6 @@ EOF
         return 1
       fi
       echo "Stopping service... '$service_name'" >&2
-      sleep 4
 
       if ! rm "$target_dir$service_name"; then
         echo "Failed to remove service." >&2
