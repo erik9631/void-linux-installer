@@ -217,7 +217,8 @@ export -f x_chroot
 function export_theme(){
     local theme=$1
     local user_home=$2
-    local theme_file="$SCRIPT_DIR"/../theme/dracula.zip
+    local theme_file
+    theme_file=$(find "$SCRIPT_DIR/../theme/" -type f -iname "$theme.*")
     local tmp_dir
     if [[ ! -f "$theme_file" ]]; then
         echo "Theme file not found: $theme_file" >&2
@@ -225,17 +226,22 @@ function export_theme(){
     fi
     tmp_dir=$(mktemp -d)
     local theme_dir="$user_home/.local/share/themes/$theme"
-    mkdir -p "$theme_dir"
-    tar xf "$theme_file" -C "$tmp_dir"
+    if ! mkdir -pv "$theme_dir"; then
+        echo "Failed to create theme directory: $theme_dir" >&2
+        return 1
+    fi
 
-    # Copy contents to theme directory
-    # Using /* to expand contents and not the directory itself
-    cp -r "$tmp_dir"/*/* "$theme_dir"/
+    if ! unzip "$theme_file" -d "$tmp_dir"; then
+        echo "Failed to extract theme" >&2
+        return 1
+    fi
 
-    # Cleanup
-    rm -rf "$tmp_dir"
+    if ! mv "$tmp_dir"/*/* "$theme_dir"/; then
+        echo "Failed to move theme files" >&2
+        return 1
+    fi
 
     # Set permissions
-    chown -R $(stat -c '%u:%g' "$user_home") "$theme_dir"
+    chown -Rv $(stat -c '%u:%g' "$user_home") "$theme_dir"  # -v added
 }
-
+export -f export_theme

@@ -135,6 +135,8 @@ stage_zero(){
   # Display manager not saving config
 
   copy_wpa_supplicant_conf
+  xbps-install -Suy xbps
+  xbps-install -y unzip
 
   x_chroot /mnt /bin/bash -c "
     if ! xbps-install -Suy xbps; then
@@ -199,11 +201,11 @@ stage_zero(){
       echo \"Failed to create pipewire folder\" >&2
     fi
 
-    if ! ln -s /usr/share/examples/wireplumber/10-wireplumber.conf /etc/pipewire/pipewire.conf.d/; then
+    if ! ln -sv /usr/share/examples/wireplumber/10-wireplumber.conf /etc/pipewire/pipewire.conf.d/; then
       echo \"WirePlumber configuration failed to link\" >&2
     fi
 
-    if ! ln -s /usr/share/examples/pipewire/20-pipewire-pulse.conf /etc/pipewire/pipewire.conf.d/; then
+    if ! ln -sv /usr/share/examples/pipewire/20-pipewire-pulse.conf /etc/pipewire/pipewire.conf.d/; then
       echo \"Pipewire configuration failed to link\"
     fi
 
@@ -211,12 +213,12 @@ stage_zero(){
       echo \"Failed to create alsa config directory\" >&2
     fi
 
-    if ! ln -s /usr/share/alsa/alsa.conf.d/50-pipewire.conf /etc/alsa/conf.d/; then
+    if ! ln -sv /usr/share/alsa/alsa.conf.d/50-pipewire.conf /etc/alsa/conf.d/; then
       echo \"Failed to link ALSA pipewire config\" >&2
     fi
 
-    if ! ln -s /usr/share/alsa/alsa.conf.d/99-pipewire-default.conf /etc/alsa/conf.d/; then
-      ln -s /usr/share/alsa/alsa.conf.d/99-pipewire-default.conf /etc/alsa/conf.d
+    if ! ln -sv /usr/share/alsa/alsa.conf.d/99-pipewire-default.conf /etc/alsa/conf.d/; then
+      ln -sv /usr/share/alsa/alsa.conf.d/99-pipewire-default.conf /etc/alsa/conf.d
     fi
 
     echo \"root:\$password\" | chpasswd -c SHA512
@@ -227,7 +229,7 @@ stage_zero(){
     usermod -aG audio \"\$username\"
     usermod -aG video \"\$username\"
     usermod -aG _seatd \"\$username\"
-    sed -i '/^#\s*%wheel ALL=(ALLd:ALL) ALL/s/^# //' /etc/sudoers
+    sed -i '/^#\s*%wheel ALL=(ALL:ALL) ALL/s/^# //' /etc/sudoers
 
     echo 'Performing services setup...'>&2
     for svc in dbus dhcpcd chronyd tlp rtkit seatd xdg-run-generator; do
@@ -239,15 +241,33 @@ stage_zero(){
 
   copy_configs "/mnt/home/$username" "$username"
 
-  map_string  "export XDG_RUNTIME_DIR=" "export XDG_RUNTIME_DIR=/run/user/\$(id -u)" /mnt/etc/profile.d/bash.sh
-  map_string "Exec=nnn" "Exec=alacritty -e nnn" /mnt/usr/share/applications/nnn.desktop
-  map_string "Exec=nvim %F" "Exec=alacritty -e nvim %F" /mnt/usr/share/applications/nvim.desktop
-  map_string "Exec=btop" "Exec=alacritty -e btop" /mnt/usr/share/applications/btop.desktop
+  if ! map_string  "export XDG_RUNTIME_DIR=" "export XDG_RUNTIME_DIR=/run/user/\$(id -u)" /mnt/etc/profile.d/bash.sh; then
+    echo "Failed to map XDG_RUNTIME_DIR" >&2
+  fi
 
-  mkdir -p /etc/udev/rules.d/
-  echo 'ACTION=="add", SUBSYSTEM=="backlight", GROUP="video", MODE="0664"' > /etc/udev/rules.d/90-backlight.rules
-  export_theme "Dracula" "/mnt/home/$username"
-  set_theme "Dracula"
+  if ! map_string "Exec=nnn" "Exec=alacritty -e nnn" /mnt/usr/share/applications/nnn.desktop; then
+    echo "Failed to map nnn" >&2
+  fi
+
+  if ! map_string "Exec=nvim %F" "Exec=alacritty -e nvim %F" /mnt/usr/share/applications/nvim.desktop; then
+    echo "Failed to map nvim" >&2
+  fi
+
+  if ! map_string "Exec=btop" "Exec=alacritty -e btop" /mnt/usr/share/applications/btop.desktop; then
+    echo "Failed to map btop" >&2
+  fi
+
+  if ! mkdir -p /mnt/etc/udev/rules.d/ ; then
+    echo "Failed to create udev rules directory" >&2
+  fi
+  if ! echo 'ACTION=="add", SUBSYSTEM=="backlight", GROUP="video", MODE="0664"' > /mnt/etc/udev/rules.d/
+  backlight.rules; then
+    echo "Failed to create udev rule" >&2
+  fi
+
+  if ! export_theme "Dracula" "/mnt/home/$username"; then
+    echo "Failed to export theme" >&2
+  fi
 
   echo 'Install complete. Rebooting into the system'
   sleep 5

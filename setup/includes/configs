@@ -15,8 +15,11 @@ function copy_configs(){
   local user_home=$1
   local user_name=$2
   mkdir -p "$user_home"/.config
-  chown -R "$user_name":"$user_name" "$user_home"/.config
   cp -rv "$SCRIPT_DIR"/../config/* "$user_home"/.config/
+  export user_name
+  x_chroot -c "
+    chown -R \"\$user_name\":\"\$user_name\" \"/home/\$user_name\"
+  "
 }
 export -f copy_configs
 
