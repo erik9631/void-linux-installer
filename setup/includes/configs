@@ -17,8 +17,11 @@ function copy_configs(){
   mkdir -p "$user_home"/.config
   cp -rv "$SCRIPT_DIR"/../config/* "$user_home"/.config/
   export user_name
-  x_chroot -c "
-    chown -R \"\$user_name\":\"\$user_name\" \"/home/\$user_name\"
+  x_chroot /mnt /bin/bash -c  "
+    if ! chown -R \"\$user_name:\$user_name\" \"/home/\$user_name\"; then
+      echo \"Failed to chown /home/\$user_name\" >&2
+      return 1
+    fi
   "
 }
 export -f copy_configs
