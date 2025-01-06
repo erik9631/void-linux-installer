@@ -133,6 +133,11 @@ stage_zero(){
   # Use BTRFS for testing
   ## TODO
   # Display manager not saving config
+  # Setup screen sharing
+  # Setup screenshotting and screen capture
+  # Setup printing
+  # Setup nnn plugins
+  # Setup jetbrains and other stuff
 
   copy_wpa_supplicant_conf
   xbps-install -Suy xbps
@@ -257,11 +262,23 @@ stage_zero(){
     echo "Failed to map btop" >&2
   fi
 
+  if ! map_string "Terminal=true" "Terminal=false" /mnt/usr/share/applications/nnn.desktop; then
+    echo "Failed to set Terminal=false for nnn" >&2
+  fi
+
+  if ! map_string "Terminal=true" "Terminal=false" /mnt/usr/share/applications/nvim.desktop; then
+    echo "Failed to set terminal=false for nvim" >&2
+  fi
+
+  if ! map_string "Terminal=true" "Terminal=false" /mnt/usr/share/applications/btop.desktop; then
+    echo "Failed to set Terminal=false for btop" >&2
+  fi
+
   if ! mkdir -p /mnt/etc/udev/rules.d/ ; then
     echo "Failed to create udev rules directory" >&2
   fi
-  if ! echo 'ACTION=="add", SUBSYSTEM=="backlight", GROUP="video", MODE="0664"' > /mnt/etc/udev/rules.d/
-  backlight.rules; then
+
+  if ! echo 'ACTION=="add", SUBSYSTEM=="backlight", GROUP="video", MODE="0664"' > /mnt/etc/udev/rules.d/backlight.rules; then
     echo "Failed to create udev rule" >&2
   fi
 

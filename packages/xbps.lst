@@ -23,6 +23,9 @@ base-devel
 p7zip
 nnn
 nwg-look
+xdg-utils # Utils for xdg standard like set default app command
+xdg-desktop-portal # Used by various GTK apps to communicate over dbus
+xdg-desktop-portal-wlr # Used by various GTK apps to communicate over dbus. This is the wlr backend
 wcm # Configuration manager for wayfire
 gsettings-desktop-schemas # Mandatory for gtk themes to properly apply. Also used by nwg-look
 firefox
