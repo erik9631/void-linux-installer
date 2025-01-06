@@ -1,0 +1,111 @@
+
+2024/12/19 (23:10:35) | ===> btop++ v.1.4.0
+2024/12/19 (23:10:35) | WARNING: Intel GPU: Failed to initialize PMU
+
+2024/12/19 (23:18:21) | ===> btop++ v.1.4.0
+2024/12/19 (23:18:21) | WARNING: Intel GPU: Failed to initialize PMU
+
+2024/12/19 (23:22:01) | ===> btop++ v.1.4.0
+2024/12/19 (23:22:01) | WARNING: Intel GPU: Failed to initialize PMU
+
+2024/12/19 (23:28:05) | ===> btop++ v.1.4.0
+2024/12/19 (23:28:05) | WARNING: Intel GPU: Failed to initialize PMU
+
+2024/12/20 (14:18:19) | ===> btop++ v.1.4.0
+2024/12/20 (14:18:19) | WARNING: Intel GPU: Failed to initialize PMU
+
+2024/12/20 (14:19:15) | ===> btop++ v.1.4.0
+2024/12/20 (14:19:15) | WARNING: Intel GPU: Failed to initialize PMU
+
+2024/12/20 (14:21:58) | ===> btop++ v.1.4.0
+2024/12/20 (14:21:58) | WARNING: Intel GPU: Failed to initialize PMU
+
+2024/12/20 (14:24:38) | ===> btop++ v.1.4.0
+2024/12/20 (14:24:38) | WARNING: Intel GPU: Failed to initialize PMU
+
+2024/12/20 (15:22:42) | ===> btop++ v.1.4.0
+2024/12/20 (15:22:42) | WARNING: Intel GPU: Failed to initialize PMU
+
+2024/12/20 (15:31:42) | ===> btop++ v.1.4.0
+2024/12/20 (15:31:42) | WARNING: Intel GPU: Failed to initialize PMU
+
+2024/12/20 (15:33:51) | ===> btop++ v.1.4.0
+2024/12/20 (15:33:51) | WARNING: Intel GPU: Failed to initialize PMU
+
+2024/12/20 (15:36:55) | ===> btop++ v.1.4.0
+2024/12/20 (15:36:55) | WARNING: Intel GPU: Failed to initialize PMU
+
+2024/12/20 (15:41:06) | ===> btop++ v.1.4.0
+2024/12/20 (15:41:06) | INFO: Logger set to DEBUG
+2024/12/20 (15:41:06) | DEBUG: Setting LC_ALL=en_US.UTF-8
+2024/12/20 (15:41:06) | INFO: Running on /dev/pts/1
+2024/12/20 (15:41:06) | INFO: Failed to load libnvidia-ml.so, NVIDIA GPUs will not be detected: libnvidia-ml.so.1: cannot open shared object file: No such file or directory
+2024/12/20 (15:41:06) | INFO: Failed to load librocm_smi64.so, AMD GPUs will not be detected: librocm_smi64.so.6: cannot open shared object file: No such file or directory
+2024/12/20 (15:41:06) | WARNING: Intel GPU: Failed to initialize PMU
+2024/12/20 (15:41:06) | DEBUG: Shared::init() : Initialized.
+2024/12/20 (15:41:27) | DEBUG: Writing new config file
+2024/12/20 (15:41:27) | INFO: Quitting! Runtime: 00:00:21
+
+2024/12/20 (15:45:56) | ===> btop++ v.1.4.0
+2024/12/20 (15:45:56) | INFO: Logger set to DEBUG
+2024/12/20 (15:45:56) | DEBUG: Setting LC_ALL=en_US.UTF-8
+2024/12/20 (15:45:56) | INFO: Running on /dev/pts/1
+2024/12/20 (15:45:56) | INFO: Failed to load libnvidia-ml.so, NVIDIA GPUs will not be detected: libnvidia-ml.so.1: cannot open shared object file: No such file or directory
+2024/12/20 (15:45:56) | INFO: Failed to load librocm_smi64.so, AMD GPUs will not be detected: librocm_smi64.so.6: cannot open shared object file: No such file or directory
+2024/12/20 (15:45:56) | WARNING: Intel GPU: Failed to initialize PMU
+2024/12/20 (15:45:56) | DEBUG: Shared::init() : Initialized.
+
+2024/12/20 (15:47:27) | ===> btop++ v.1.4.0
+2024/12/20 (15:47:27) | INFO: Logger set to DEBUG
+2024/12/20 (15:47:27) | DEBUG: Setting LC_ALL=en_US.UTF-8
+2024/12/20 (15:47:27) | INFO: Running on /dev/pts/1
+2024/12/20 (15:47:27) | INFO: Failed to load libnvidia-ml.so, NVIDIA GPUs will not be detected: libnvidia-ml.so.1: cannot open shared object file: No such file or directory
+2024/12/20 (15:47:27) | INFO: Failed to load librocm_smi64.so, AMD GPUs will not be detected: librocm_smi64.so.6: cannot open shared object file: No such file or directory
+2024/12/20 (15:47:27) | WARNING: Intel GPU: Failed to initialize PMU
+2024/12/20 (15:47:27) | DEBUG: Shared::init() : Initialized.
+
+2024/12/20 (15:48:55) | ===> btop++ v.1.4.0
+2024/12/20 (15:48:55) | INFO: Logger set to DEBUG
+2024/12/20 (15:48:55) | DEBUG: Setting LC_ALL=en_US.UTF-8
+2024/12/20 (15:48:55) | INFO: Running on /dev/pts/0
+2024/12/20 (15:48:55) | INFO: Failed to load libnvidia-ml.so, NVIDIA GPUs will not be detected: libnvidia-ml.so.1: cannot open shared object file: No such file or directory
+2024/12/20 (15:48:55) | INFO: Failed to load librocm_smi64.so, AMD GPUs will not be detected: librocm_smi64.so.6: cannot open shared object file: No such file or directory
+2024/12/20 (15:48:55) | WARNING: Intel GPU: Failed to initialize PMU
+2024/12/20 (15:48:55) | DEBUG: Shared::init() : Initialized.
+
+2024/12/20 (15:51:16) | ===> btop++ v.1.4.0
+2024/12/20 (15:51:16) | INFO: Logger set to DEBUG
+2024/12/20 (15:51:16) | DEBUG: Setting LC_ALL=en_US.UTF-8
+2024/12/20 (15:51:16) | INFO: Running on /dev/pts/0
+2024/12/20 (15:51:16) | INFO: Failed to load libnvidia-ml.so, NVIDIA GPUs will not be detected: libnvidia-ml.so.1: cannot open shared object file: No such file or directory
+2024/12/20 (15:51:16) | INFO: Failed to load librocm_smi64.so, AMD GPUs will not be detected: librocm_smi64.so.6: cannot open shared object file: No such file or directory
+2024/12/20 (15:51:16) | WARNING: Intel GPU: Failed to initialize PMU
+2024/12/20 (15:51:16) | DEBUG: Shared::init() : Initialized.
+2024/12/20 (15:51:26) | INFO: Quitting! Runtime: 00:00:10
+
+2024/12/20 (15:51:28) | ===> btop++ v.1.4.0
+2024/12/20 (15:51:28) | INFO: Logger set to DEBUG
+2024/12/20 (15:51:28) | DEBUG: Setting LC_ALL=en_US.UTF-8
+2024/12/20 (15:51:28) | INFO: Running on /dev/pts/0
+2024/12/20 (15:51:28) | INFO: Failed to load libnvidia-ml.so, NVIDIA GPUs will not be detected: libnvidia-ml.so.1: cannot open shared object file: No such file or directory
+2024/12/20 (15:51:28) | INFO: Failed to load librocm_smi64.so, AMD GPUs will not be detected: librocm_smi64.so.6: cannot open shared object file: No such file or directory
+2024/12/20 (15:51:28) | WARNING: Intel GPU: Failed to initialize PMU
+2024/12/20 (15:51:28) | DEBUG: Shared::init() : Initialized.
+
+2024/12/20 (15:52:56) | ===> btop++ v.1.4.0
+2024/12/20 (15:52:56) | INFO: Logger set to DEBUG
+2024/12/20 (15:52:56) | DEBUG: Setting LC_ALL=en_US.UTF-8
+2024/12/20 (15:52:56) | INFO: Running on /dev/pts/0
+2024/12/20 (15:52:56) | INFO: Failed to load libnvidia-ml.so, NVIDIA GPUs will not be detected: libnvidia-ml.so.1: cannot open shared object file: No such file or directory
+2024/12/20 (15:52:56) | INFO: Failed to load librocm_smi64.so, AMD GPUs will not be detected: librocm_smi64.so.6: cannot open shared object file: No such file or directory
+2024/12/20 (15:52:56) | WARNING: Intel GPU: Failed to initialize PMU
+2024/12/20 (15:52:56) | DEBUG: Shared::init() : Initialized.
+
+2024/12/20 (15:53:05) | ===> btop++ v.1.4.0
+2024/12/20 (15:53:05) | INFO: Logger set to DEBUG
+2024/12/20 (15:53:05) | DEBUG: Setting LC_ALL=en_US.UTF-8
+2024/12/20 (15:53:05) | INFO: Running on /dev/pts/0
+2024/12/20 (15:53:05) | INFO: Failed to load libnvidia-ml.so, NVIDIA GPUs will not be detected: libnvidia-ml.so.1: cannot open shared object file: No such file or directory
+2024/12/20 (15:53:05) | INFO: Failed to load librocm_smi64.so, AMD GPUs will not be detected: librocm_smi64.so.6: cannot open shared object file: No such file or directory
+2024/12/20 (15:53:05) | WARNING: Intel GPU: Failed to initialize PMU
+2024/12/20 (15:53:05) | DEBUG: Shared::init() : Initialized.

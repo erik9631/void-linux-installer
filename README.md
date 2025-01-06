@@ -6,14 +6,31 @@ A minimalist Void Linux configuration focused on efficiency and functionality.
 
 ### Display Server & Desktop Environment
 - **Wayland** - Modern display server protocol
-- **Wayfire** - Lightweight, 3D Wayland compositor
+- **Wayfire** - Lightweight, 3D Wayland compositor and window manager
 - **Waybar** - Highly customizable status bar
-- **Mako** - Lightweight Wayland notification daemon
-- **Fuzzel** - Minimal application launcher
 - **wl-clipboard** - Command-line clipboard utilities for Wayland
-
+- Also allows copy pasting between various windows
+- **mesa-dri (Direct Rendering Infrastructure)**:
+  - This package provides the OpenGL drivers for 3D acceleration
+  - It's essential for hardware-accelerated graphics on Linux systems
+  - Enables direct rendering between applications and your graphics hardware
+  - Important for gaming, 3D applications, and smooth desktop effects
+  - Part of the Mesa 3D graphics library system
+- **vulkan-loader**:
+  - This is the runtime loader for the Vulkan graphics API
+  - It's required to run applications that use Vulkan
+  - Handles the loading of Vulkan drivers and layers
+  - Essential for modern gaming on Linux
+  - Provides a lower-level, higher-performance alternative to OpenGL
 
 ### System Essentials
+
+#### IPC
+- **dbus** - System message bus
+- **rtkit** - Realtime process scheduler (For realtime IPC communication like audio)
+
+#### Displa
+
 
 #### Time Synchronization
 - **chrony** - Modern NTP daemon
@@ -22,10 +39,10 @@ A minimalist Void Linux configuration focused on efficiency and functionality.
   - Required for proper system operation and security
 
 #### Polkit Authentication
-- **polkit** - Authorization manager
+- **seatd** - Authorization manager
   - Handles privileged operations
-  - Required for mounting drives, power management
-  - Needed by many desktop applications
+  - Needed by window managers to manage privileged operations.
+  - Acts like a centralized session system for managing privileged operations.
 
 #### XDG Portals (Wayland Integration)
 - **xdg-desktop-portal-wlr** - Wayland portal backend
@@ -77,11 +94,13 @@ TLP-based power management solution:
   - Not required for regular operation
 
 ### Network Management
-- **NetworkManager** - Complete network connection manager (Wi-Fi, Ethernet, Mobile Broadband)
+- **wpa_supplicant** - Complete network connection manager (Wi-Fi, Ethernet, Mobile Broadband)
 
 ## Applications
 
+
 ### System Utilities
+- **Fuzzel** - Minimal application launcher
 - **Alacritty** - GPU-accelerated terminal emulator
 - **nnn** - Fast and lightweight terminal file manager
 - **btop** - Resource monitor and process viewer
@@ -91,7 +110,7 @@ TLP-based power management solution:
 ### Daily Use Applications
 - **Firefox** - Web browser
 - **VLC** - Media player supporting wide range of formats
-- **vim** - Terminal-based text editor
+- **nvim** - Terminal-based text editor
 - **git** - Version control system
 
 ## Printing System

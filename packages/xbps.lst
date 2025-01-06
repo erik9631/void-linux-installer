@@ -23,6 +23,7 @@ base-devel
 p7zip
 nnn
 nwg-look
+wcm # Configuration manager for wayfire
 gsettings-desktop-schemas # Mandatory for gtk themes to properly apply. Also used by nwg-look
 firefox
 

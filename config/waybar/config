@@ -1,8 +1,8 @@
 {
     "layer": "top",
-    "modules-left": ["sway/workspaces", "sway/mode"],
-    "modules-center": ["sway/window"],
-    "modules-right": ["battery", "clock", "backlight", "pulseaudio"],
+    "modules-left": ["wlr/taskbar"],
+    "modules-center": ["clock"],
+    "modules-right": ["battery", "backlight", "tray", "pulseaudio"],
     "sway/window": {
         "max-length": 50
     },
@@ -61,5 +61,19 @@
         "format-icons": ["", ""],
         "on-scroll-up": "light -U 1",
         "on-scroll-down": "light -A 1",
+    },
+    "tray": {
+        "icon-size": 21,
+        "spacing": 10
+    },
+    "wlr/taskbar": {
+        "format": "{icon}",
+        "icon-size": 16,  
+        "tooltip-format": "{title}",
+        "on-click": "activate",
+        "on-click-middle": "close",
+        "ignore-list": [
+            "Alacritty",
+        ]
     }
 }

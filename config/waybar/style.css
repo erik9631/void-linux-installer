@@ -38,13 +38,14 @@ window#waybar {
 #backlight,
 #network,
 #tray,
+#taskbar,
 #pulseaudio {
     font-size: 12px;
     padding-left: 10px;
     padding-right: 10px;
 
     background-color: rgba(10, 10, 24, 0.6);
-    margin-top: 5px;
+    margin-top: 2px;
 }
 
 #tray > .passive {
@@ -59,8 +60,7 @@ window#waybar {
 
 #clock{
     margin-right: 10px;
-    border-top-right-radius:8px;
-    border-bottom-right-radius: 8px;
+    border-radius: 8px 8px 8px 8px;
 }
 
 #memory{
@@ -69,16 +69,41 @@ window#waybar {
     margin-left: 10px;
 }
 
+#taskbar{
+    margin-left: 2px;
+    border-radius: 8px 8px 8px 8px;
+}
+#taskbar button {
+    padding-left: 6px;
+    padding-top: 0px;
+    padding-bottom: 0px;
+    padding-right: 6px;
+}
+
+#taskbar button.active {
+    background-color: rgba(68, 71, 90, 0.7);
+}
+
+#taskbar button:hover {
+    background-color: rgba(40, 42, 54, 0.7);
+}
+
+#taskbar.empty {
+    background-color: transparent;
+}
+
+
 #network{
     border-radius: 8px 0 0 8px; /* Top-left, top-right, bottom-right, bottom-left */
 }
 
 #battery{
-    border-radius: 0px 8px 8px 0px; /* Top-left, top-right, bottom-right, bottom-left */
+    border-radius: 8px 0px 0px 8px; /* Top-left, top-right, bottom-right, bottom-left */
     padding-right: 18px;
 }
 
 #pulseaudio{
-    border-top-left-radius: 8px;
-    border-bottom-left-radius: 8px;
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+    margin-right: 2px;
 }
