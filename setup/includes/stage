@@ -133,6 +133,7 @@ stage_zero(){
   # Use BTRFS for testing
   ## TODO
   # Display manager not saving config
+  # Consider installing swww for backgrounds. Consider using waypaper (IT is in python so maybe not)
   # Setup screen sharing
   # Setup screenshotting and screen capture
   # Setup printing
@@ -143,6 +144,7 @@ stage_zero(){
   xbps-install -Suy xbps
   xbps-install -y unzip
 
+  # installs base-system and prepares grub
   x_chroot /mnt /bin/bash -c "
     if ! xbps-install -Suy xbps; then
         echo 'Failed to update xbps' >&2
@@ -177,6 +179,7 @@ stage_zero(){
     fi
   "
 
+  # installs all the packages for the system
   echo 'Installing packages...'>&2
   if [[ -n "${stage0_packages_str}" ]]; then
     local stage0_packages
@@ -201,6 +204,9 @@ stage_zero(){
   echo "Setting up hostname" >&2
   echo "$hostname" > /mnt/etc/hostname
 
+  # Setups pipewire configuration so it properly works with pulse and alsa
+  # Also setups up the initial user and his permissions
+  # Lastly sets up basic services
   x_chroot /mnt /bin/bash -c "
     if ! mkdir -p /etc/pipewire/pipewire.conf.d; then
       echo \"Failed to create pipewire folder\" >&2
@@ -246,10 +252,13 @@ stage_zero(){
 
   copy_configs "/mnt/home/$username" "$username"
 
+  # Setup XDG_RUNTIME_DIR
+
   if ! map_string  "export XDG_RUNTIME_DIR=" "export XDG_RUNTIME_DIR=/run/user/\$(id -u)" /mnt/etc/profile.d/bash.sh; then
     echo "Failed to map XDG_RUNTIME_DIR" >&2
   fi
 
+  # Setups desktop files
   if ! map_string "Exec=nnn" "Exec=alacritty -e nnn" /mnt/usr/share/applications/nnn.desktop; then
     echo "Failed to map nnn" >&2
   fi
