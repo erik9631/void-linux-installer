@@ -87,12 +87,7 @@ TLP-based power management solution:
   - Handles disk power management
   - Manages Wi-Fi and Bluetooth power states
   - Configurable via `/etc/tlp.conf`
-
-- **powertop** - Power consumption analyzer
-  - Diagnostic tool for power usage
-  - Install temporarily when needed for troubleshooting
-  - Not required for regular operation
-
+  - 
 ### Network Management
 - **wpa_supplicant** - Complete network connection manager (Wi-Fi, Ethernet, Mobile Broadband)
 
@@ -121,28 +116,6 @@ Complete printing solution with network discovery:
 - **avahi** - Network service discovery
 - **nss-mdns** - Multicast DNS resolution
 - **sane** - Scanner Access Now Easy (scanning utility)
-
-## Services to Enable
-```bash
-# Core
-ln -s /etc/sv/dbus /var/service/
-ln -s /etc/sv/NetworkManager /var/service/
-
-# Printing
-ln -s /etc/sv/cupsd /var/service/
-ln -s /etc/sv/avahi-daemon /var/service/
-
-# Audio
-ln -s /etc/sv/pipewire /var/service/
-# Power Management
-ln -s /etc/sv/tlp /var/service/
-```
-
-## Post-Installation Notes
-- Configure NetworkManager with `nmtui` or `nmcli`
-- Set up printing via CUPS web interface at `localhost:631`
-- Configure Wayfire using `~/.config/wayfire.ini`
-- Configure Waybar using `~/.config/waybar/config`
 
 ---
 *This setup aims for minimalism while maintaining full functionality for daily use.*
