@@ -291,9 +291,9 @@ stage_zero(){
     echo "Failed to create udev rule" >&2
   fi
 
-  if ! export_theme "Dracula" "/mnt/home/$username"; then
-    echo "Failed to export theme" >&2
-  fi
+#  if ! export_theme "Dracula" "/mnt/home/$username"; then
+#    echo "Failed to export theme" >&2
+#  fi
 
   echo 'Install complete. Rebooting into the system'
   sleep 5
