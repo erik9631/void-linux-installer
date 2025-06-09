@@ -14,6 +14,12 @@ application/x-extension-xht=userapp-Firefox-YW5RZ2.desktop
 text/markdown=nvim.desktop
 text/plain=nvim.desktop
 text/x-shellscript=nvim.desktop
+xdg-mime default qimgv.desktop image/jpeg
+xdg-mime default qimgv.desktop image/png
+xdg-mime default qimgv.desktop image/gif
+xdg-mime default qimgv.desktop image/bmp
+xdg-mime default qimgv.desktop image/webp
+xdg-mime default qimgv.desktop image/svg+xml
 
 [Added Associations]
 x-scheme-handler/http=userapp-Firefox-YW5RZ2.desktop;

@@ -23,64 +23,13 @@ base-devel
 p7zip
 nnn
 nwg-look
-xdg-utils # Utils for xdg standard like set default app command
-xdg-desktop-portal # Used by various GTK apps to communicate over dbus
-xdg-desktop-portal-wlr # Used by various GTK apps to communicate over dbus. This is the wlr backend
-wcm # Configuration manager for wayfire
+gnome-themes-extra
+xdg-utils #Utils for xdg standard like set default app command
+xdg-desktop-portal #Used by various GTK apps to communicate over dbus
+xdg-desktop-portal-wlr #Used by various GTK apps to communicate over dbus. This is the wlr backend
+wcm #Configuration manager for wayfire
 gsettings-desktop-schemas # Mandatory for gtk themes to properly apply. Also used by nwg-look
 firefox
-
-
-[stage1]
-wayland # Display server
-
-# System tools
-zip
-unzip
-htop # System monitor
-grim # Screenshot tool
-slurp # Screenshot tool
-wl-clipboard # Clipboard manager
-kitty # Terminal emulator
-gvfs # Virtual filesystem for thunar
-thunar-volman # Automounting for thunar
-swayidle # Idle manager
-tlp # Power management
-
-# Daemons
-dunst #Notification daemon
-pipewire # Audio server
-pipewire-pulse # Pulseaudio support for pipewire
-pipewire-jack # Jack support for pipewire
-pipewire-alsa # Alsa support for pipewire
-xdg-desktop-portal-hyprland # It’s used for stuff like e.g. opening file pickers, screen sharing.
-avahi # Network discovery
-cups # Printing
-nss-mdns # mDNS support for avahi
-smbclient # To access samba shares (Like windows shared folders...)
-
-# Visual
-waybar
-papirus-icon-theme
-nerd-fonts
-kvantum
-vlc # Vlc player for videos
-
-# Libs
-qt5ct
-qt6ct
-fuse2 # Mandatory lib for running fuse based apps
-python-dbus # Used by avahi-discover
-ghostscript # Used by cups and needed for printing
-nvidia-dkms # Nvidia dynamic kernel driver module
-R
-# Gui Apps
-thunar
-xarchiver
-thunar-archive-plugin
-pavucontrol
-blueman
-network-manager-applet
 
 [ZenBook UX435EA_UX435EA]
 sof-firmware

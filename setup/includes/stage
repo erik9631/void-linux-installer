@@ -259,11 +259,11 @@ stage_zero(){
   fi
 
   # Setups desktop files
-  if ! map_string "Exec=nnn" "Exec=alacritty -e nnn" /mnt/usr/share/applications/nnn.desktop; then
+  if ! map_string "Exec=nnn" "Exec=alacritty -e nnn %U" /mnt/usr/share/applications/nnn.desktop; then
     echo "Failed to map nnn" >&2
   fi
 
-  if ! map_string "Exec=nvim %F" "Exec=alacritty -e nvim %F" /mnt/usr/share/applications/nvim.desktop; then
+  if ! map_string "Exec=nvim %F" "Exec=alacritty -e nvim %U" /mnt/usr/share/applications/nvim.desktop; then
     echo "Failed to map nvim" >&2
   fi
 
@@ -290,6 +290,8 @@ stage_zero(){
   if ! echo 'ACTION=="add", SUBSYSTEM=="backlight", GROUP="video", MODE="0664"' > /mnt/etc/udev/rules.d/backlight.rules; then
     echo "Failed to create udev rule" >&2
   fi
+
+  echo "export EDITOR=/bin/nvim" >> "/home/$username/.bashrc"
 
 #  if ! export_theme "Dracula" "/mnt/home/$username"; then
 #    echo "Failed to export theme" >&2
