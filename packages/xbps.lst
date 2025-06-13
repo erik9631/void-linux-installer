@@ -1,9 +1,12 @@
 [stage0]
 dbus
 tlp
+tlp-rdw
+acpi
 rtkit
 pipewire
 alsa-pipewire
+libspa-bluetooth #Bluetooth codec for pipewire
 seatd
 chrony
 mesa-dri
@@ -22,14 +25,19 @@ pavucontrol
 base-devel
 p7zip
 nnn
+curl
+dragon # Drag and drop utility
+fzf # fuzzy search utility
 nwg-look
 gnome-themes-extra
+wlr-randr # Display configuration utility
 xdg-utils #Utils for xdg standard like set default app command
 xdg-desktop-portal #Used by various GTK apps to communicate over dbus
 xdg-desktop-portal-wlr #Used by various GTK apps to communicate over dbus. This is the wlr backend
 wcm #Configuration manager for wayfire
 gsettings-desktop-schemas # Mandatory for gtk themes to properly apply. Also used by nwg-look
 firefox
+qimgv
 
 [ZenBook UX435EA_UX435EA]
 sof-firmware

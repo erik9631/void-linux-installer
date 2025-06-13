@@ -87,7 +87,13 @@ TLP-based power management solution:
   - Handles disk power management
   - Manages Wi-Fi and Bluetooth power states
   - Configurable via `/etc/tlp.conf`
-  - 
+- **tlp-rdw** - TLP Radio Device Wizard
+  - Provides additional radio device management
+  - Useful for laptops with Wi-Fi and Bluetooth
+- **acpi** - ACPI event daemon
+  - Handles power button events
+  - Manages lid open/close actions
+  - Required for proper laptop power management
 ### Network Management
 - **wpa_supplicant** - Complete network connection manager (Wi-Fi, Ethernet, Mobile Broadband)
 
