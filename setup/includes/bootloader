@@ -90,5 +90,23 @@ install_grub() {
     fi
 
     echo "GRUB installation complete."
+
+    # Configure NVIDIA DRM modeset
+    echo "Configuring NVIDIA DRM modeset..."
+    if ! grep -q "nvidia_drm.modeset=1" /etc/default/grub 2>/dev/null; then
+        sed -i 's/^GRUB_CMDLINE_LINUX_DEFAULT="\(.*\)"/GRUB_CMDLINE_LINUX_DEFAULT="\1 nvidia_drm.modeset=1"/' /etc/default/grub
+        echo "Added nvidia_drm.modeset=1 to kernel parameters"
+    else
+        echo "nvidia_drm.modeset=1 already present in kernel parameters"
+    fi
+
+    # Generate GRUB config
+    echo "Generating GRUB configuration..."
+    if grub-mkconfig -o /boot/grub/grub.cfg; then
+        echo "GRUB configuration generated successfully."
+    else
+        echo "Failed to generate GRUB configuration." >&2
+        exit 1
+    fi
 }
 export -f install_grub

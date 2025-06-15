@@ -248,7 +248,7 @@ stage_zero(){
             echo \"Warning: Failed to enable \$svc\" >&2
         fi
     done
-    sh -c \"\$(curl -Ls https://raw.githubusercontent.com/jarun/nnn/master/plugins/getplugs)\"
+    curl -Ls https://raw.githubusercontent.com/jarun/nnn/master/plugins/getplugs | sh
   "
 
   copy_configs "/mnt/home/$username" "$username"
@@ -292,8 +292,8 @@ stage_zero(){
     echo "Failed to create udev rule" >&2
   fi
 
-  echo "export EDITOR='/bin/nvim'" >> "/home/$username/.bashrc"
-  echo "export NNN_PLUG='f:finder;o:fzopen;p:fzplug;t:nmount;v:imgview'" >> "/home/$username/.bashrc"
+  echo "export EDITOR='/bin/nvim'" >> "/mnt/home/$username/.bashrc"
+  echo "export NNN_PLUG='f:finder;o:fzopen;p:fzplug;t:nmount;v:imgview'" >> "/mnt/home/$username/.bashrc"
 
 #  if ! export_theme "Dracula" "/mnt/home/$username"; then
 #    echo "Failed to export theme" >&2
