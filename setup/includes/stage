@@ -254,7 +254,7 @@ stage_zero(){
     sed -i '/^#\s*%wheel ALL=(ALL:ALL) ALL/s/^# //' /etc/sudoers
 
     echo 'Performing services setup...'>&2
-    for svc in dbus dhcpcd chronyd tlp rtkit seatd turnstiled; do
+    for svc in dbus dhcpcd chronyd tlp rtkit seatd turnstiled polkitd; do
         if ! service -c /etc/runit/runsvdir/default/ \$svc; then
             echo \"Warning: Failed to enable \$svc\" >&2
         fi

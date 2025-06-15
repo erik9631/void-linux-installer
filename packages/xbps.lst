@@ -21,6 +21,7 @@ seatd
 turnstile
 chrony
 light
+polkit
 wayfire
 Waybar
 alacrittyw
@@ -45,6 +46,14 @@ xdg-desktop-portal #Used by various GTK apps to communicate over dbus
 xdg-desktop-portal-wlr #Used by various GTK apps to communicate over dbus. This is the wlr backend
 wcm #Configuration manager for wayfire
 gsettings-desktop-schemas # Mandatory for gtk themes to properly apply. Also used by nwg-look
+wine # Wine for running Windows applications
+qemu
+qemu-ga # File transfer, time sync and other stuff for qemu
+spice-vdagent # Spice agent for qemu
+qemu-kvm # Qemu KVM support
+dnsmasq # Networking support for VMs
+libvirt
+bridge-utils # Network bridging utils
 firefox
 qimgv
 onedrive
