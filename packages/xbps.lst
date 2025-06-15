@@ -8,6 +8,7 @@ pipewire
 alsa-pipewire
 libspa-bluetooth #Bluetooth codec for pipewire
 seatd
+turnstile
 chrony
 mesa-dri
 vulkan-loader
@@ -38,6 +39,8 @@ wcm #Configuration manager for wayfire
 gsettings-desktop-schemas # Mandatory for gtk themes to properly apply. Also used by nwg-look
 firefox
 qimgv
+onedrive
+
 
 [ZenBook UX435EA_UX435EA]
 sof-firmware

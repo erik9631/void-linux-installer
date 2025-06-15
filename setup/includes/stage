@@ -27,6 +27,7 @@ source "$SCRIPT_DIR/includes/service"
 # shellcheck source=common
 source "$SCRIPT_DIR/includes/common"
 
+
 stage_zero(){
   # Check if the script is running as root
   local is_wireless
@@ -243,7 +244,7 @@ stage_zero(){
     sed -i '/^#\s*%wheel ALL=(ALL:ALL) ALL/s/^# //' /etc/sudoers
 
     echo 'Performing services setup...'>&2
-    for svc in dbus dhcpcd chronyd tlp rtkit seatd xdg-run-generator; do
+    for svc in dbus dhcpcd chronyd tlp rtkit seatd turnstiled; do
         if ! service -c /etc/runit/runsvdir/default/ \$svc; then
             echo \"Warning: Failed to enable \$svc\" >&2
         fi
