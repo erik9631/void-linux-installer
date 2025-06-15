@@ -178,6 +178,16 @@ stage_zero(){
         echo 'xbps-reconfigure failed' >&2
         exit 1
     fi
+
+    if ! xbps-install -S void-repo-multilib{,-nonfree}; then
+        echo 'Failed to install multilib and nonfree repositories' >&2
+        exit 1
+    fi
+
+    if ! xbps-install -Su; then
+        echo 'Failed to update system after installing multilib and nonfree repositories' >&2
+        exit 1
+    fi
   "
 
   # installs all the packages for the system

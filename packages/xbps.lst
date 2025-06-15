@@ -1,6 +1,16 @@
 [stage0]
 dbus
 tlp
+libgcc-32bit
+libstdc++-32bit
+libdrm-32bit
+libglvnd-32bit
+mesa-dri-32bit
+vulkan-loader-32bit
+mesa-vulkan-radeon-32bit
+nvidia-libs-32bit
+mesa-dri
+vulkan-loader
 tlp-rdw
 acpi
 rtkit
@@ -10,12 +20,10 @@ libspa-bluetooth #Bluetooth codec for pipewire
 seatd
 turnstile
 chrony
-mesa-dri
-vulkan-loader
 light
 wayfire
 Waybar
-alacritty
+alacrittyw
 neovim
 btop
 wl-clipboard
@@ -40,6 +48,7 @@ gsettings-desktop-schemas # Mandatory for gtk themes to properly apply. Also use
 firefox
 qimgv
 onedrive
+steam
 
 
 [ZenBook UX435EA_UX435EA]
