@@ -88,52 +88,10 @@ stage_zero(){
   stage0_packages_str="$(export_package_group "stage0" "xbps")"
 
   export boot_mode
-  # Install chrony and start the service
-  # Setup a time zone
-  # List of zones can be obtained from /usr/share/zoneinfo. This comes from tzdata package which should be pre-installed
-  # then make a symlink to the zone you want to use to export TZ='America/New_York' set in ~/.profile or ~/.bashrc:
-  # Setup dbus service
-  # Setup tlp and start tlp service
-  # install pipewire. After it is installed do:
-  # mkdir -p /etc/pipewire/pipewire.conf.d
-  #ln -s /usr/share/examples/pipewire/20-pipewire-pulse.conf /etc/pipewire/pipewire.conf.d/
-  # Also install rtkit as it is needed for pipewire for realtime scheduling
-  # install seatd and set up the service
-  # We also need to make sure we are in audio and video group
-  # Set up XDG_RUNTIME_DIR. The variable should be exported in /run/user/$(id -u). Make sure this folder exists. It should be created on session start by the user
-  # Install alsa-pipewire, then enable the PipeWire ALSA device and make it the default:
-  # mkdir -p /etc/alsa/conf.d
-  # ln -s /usr/share/alsa/alsa.conf.d/50-pipewire.conf /etc/alsa/conf.d
-  # ln -s /usr/share/alsa/alsa.conf.d/99-pipewire-default.conf /etc/alsa/conf.d
-  # install mesa-dri vulkan-loader (needed by wayfire)
-  # install wayfire
-  # Instal alacritty
-  # Install nerd-fonts
-  # Copy the wayfire ini
-  # Set XDG_RUNTIME_DIR into the profile --- make a util function for this as this is common
-  ## For apps
-  # change exec line in /usr/share/applications/alacritty.desktop and btop and any other console app to launch as alacritty -e <command>
-  # Install wl-clipboard
-  # Install wdisplays --- Display manager
-  # Install waybar
-  # install git
-  # install fuzzel
-  # base-devel for gcc toolchain
-  # install p7zip
-  # install nnn
-  # For nnn edit the desktop file so it launches in alacritty
-  # /etc/udev/rules.d/90-backlight.rules --- for backlight. We need a rule so we can write to the backlight device
-  # ACTION=="add", SUBSYSTEM=="backlight", GROUP="video", MODE="0664"
-  # Copy nvim configs
-  # Use BTRFS for testing
+
   ## TODO
   # Display manager not saving config
-  # Consider installing swww for backgrounds. Consider using waypaper (IT is in python so maybe not)
-  # Setup screen sharing
-  # Setup screenshotting and screen capture
-  # Setup printing
-  # Setup nnn plugins
-  # Setup jetbrains and other stuff
+  # Add resolv.conf for NetworkManager
 
   copy_wpa_supplicant_conf
   xbps-install -Suy xbps
@@ -259,6 +217,14 @@ stage_zero(){
 
   echo "export EDITOR='/bin/nvim'" >> "/mnt/home/$username/.bashrc"
   echo "export NNN_PLUG='f:finder;o:fzopen;p:fzplug;t:nmount;v:imgview'" >> "/mnt/home/$username/.bashrc"
+  # Configure NetworkManager
+  mkdir -p /mnt/etc/NetworkManager/
+  cat > /mnt/etc/NetworkManager/NetworkManager.conf << 'EOF'
+[main]
+dns=default
+EOF
+
+  echo "nameserver 8.8.8.8" > /mnt/etc/resolv.conf
 
 #  if ! export_theme "Dracula" "/mnt/home/$username"; then
 #    echo "Failed to export theme" >&2

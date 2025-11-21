@@ -68,7 +68,7 @@ install_grub() {
         xbps-install -y grub-"$target"
         if grub-install \
             --target="$target" \
-            --efi-directory=/boot \
+            --efi-directory=/boot/efi \
             --bootloader-id="Void Linux" \
             --recheck; then
             echo "GRUB UEFI installation successful."

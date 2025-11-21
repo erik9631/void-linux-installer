@@ -10,32 +10,22 @@ mesa-vulkan-radeon-32bit
 nvidia-libs-32bit
 mesa-dri
 vulkan-loader
-acpi
 rtkit
 pipewire
 alsa-pipewire
-libspa-bluetooth #Bluetooth codec for pipewire
+libspa-bluetooth
 chrony
 polkit
-# Minimal KDE Plasma
-plasma-desktop          # Minimal plasma core
-plasma-workspace        # Workspace essentials
-kwin                    # Window manager/compositor
-plasma-wayland-protocols
-systemsettings5         # Settings app
-kde-cli-tools
-kscreen                 # Display management
-breeze                  # Theme
-powerdevil             # Power management
-konsole                 # Terminal
-# KDE Portal
-xdg-desktop-portal-kde
-kinfocenter            # System info
-bluedevil              # Bluetooth manager UI
-plasma-nm              # NetworkManager applet
+elogind                # Seat/session management
+# KDE Plasma
+kde-plasma             # Meta-package with everything
 NetworkManager
 sddm
-egl-wayland
+xorg-minimal           # X server for SDDM
+xf86-input-libinput    # Input drivers
+qt5-wayland            # Qt5 Wayland backend
+qt6-wayland            # Qt6 Wayland backend
+# Apps
 neovim
 btop
 git
@@ -44,25 +34,25 @@ base-devel
 p7zip
 nnn
 curl
-dragon # Drag and drop utility
-fzf # fuzzy search utility
+dragon
+fzf
 gnome-themes-extra
-xdg-utils #Utils for xdg standard like set default app command
-xdg-desktop-portal #Used by various GTK apps to communicate over dbus
-gsettings-desktop-schemas # Mandatory for gtk themes to properly apply. Also used by nwg-look
-wine # Wine for running Windows applications
+xdg-utils
+xdg-desktop-portal
+gsettings-desktop-schemas
+wine
 qemu
-qemu-ga # File transfer, time sync and other stuff for qemu
-spice-vdagent # Spice agent for qemu
-qemu-kvm # Qemu KVM support
-dnsmasq # Networking support for VMs
+qemu-ga
+spice-vdagent
+dnsmasq
 libvirt
-bridge-utils # Network bridging utils
+bridge-utils
 firefox
 qimgv
 onedrive
-steam
-
-
+kwallet
+kwallet-pam
+kwalletmanager
+alacritty
 [ZenBook UX435EA_UX435EA]
 sof-firmware
