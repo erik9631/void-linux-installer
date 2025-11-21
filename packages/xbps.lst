@@ -13,6 +13,8 @@ vulkan-loader
 rtkit
 pipewire
 alsa-pipewire
+alsa-utils
+libspa-alsa
 libspa-bluetooth
 chrony
 polkit
@@ -54,5 +56,5 @@ kwallet
 kwallet-pam
 kwalletmanager
 alacritty
-[ZenBook UX435EA_UX435EA]
+bluez
 sof-firmware

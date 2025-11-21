@@ -131,7 +131,7 @@ stage_zero(){
         exit 1
     fi
 
-    if ! xbps-install -S void-repo-multilib{,-nonfree}; then
+    if ! xbps-install -Sy void-repo-multilib{,-nonfree}; then
         echo 'Failed to install multilib and nonfree repositories' >&2
         exit 1
     fi
@@ -171,6 +171,7 @@ stage_zero(){
   # Also setups up the initial user and his permissions
   # Lastly sets up basic services
   x_chroot /mnt /bin/bash -c "
+    # Setup PipeWire system configuration
     if ! mkdir -p /etc/pipewire/pipewire.conf.d; then
       echo \"Failed to create pipewire folder\" >&2
     fi
@@ -180,7 +181,7 @@ stage_zero(){
     fi
 
     if ! ln -sv /usr/share/examples/pipewire/20-pipewire-pulse.conf /etc/pipewire/pipewire.conf.d/; then
-      echo \"Pipewire configuration failed to link\"
+      echo \"Pipewire configuration failed to link\" >&2
     fi
 
     if ! mkdir -p /etc/alsa/conf.d; then
@@ -192,9 +193,10 @@ stage_zero(){
     fi
 
     if ! ln -sv /usr/share/alsa/alsa.conf.d/99-pipewire-default.conf /etc/alsa/conf.d/; then
-      ln -sv /usr/share/alsa/alsa.conf.d/99-pipewire-default.conf /etc/alsa/conf.d
+      echo \"Failed to link ALSA pipewire default config\" >&2
     fi
 
+    # Setup users and passwords
     echo \"root:\$password\" | chpasswd -c SHA512
     echo 'Setting up new user...' >&2
     useradd -m \"\$username\"
@@ -204,20 +206,45 @@ stage_zero(){
     usermod -aG video \"\$username\"
     sed -i '/^#\s*%wheel ALL=(ALL:ALL) ALL/s/^# //' /etc/sudoers
 
+    # Setup services
     echo 'Performing services setup...'>&2
-    for svc in dbus sddm NetworkManager chronyd rtkit polkitd; do
+    for svc in dbus bluetoothd sddm NetworkManager chronyd rtkit polkitd; do
         if ! service -c /etc/runit/runsvdir/default/ \$svc; then
             echo \"Warning: Failed to enable \$svc\" >&2
         fi
     done
+
+    # Download nnn plugins
     curl -Ls https://raw.githubusercontent.com/jarun/nnn/master/plugins/getplugs | sh
+
+    # Setup user environment and configs (all inside chroot with proper ownership)
+    echo 'Configuring user environment...' >&2
+
+    # Bashrc additions
+    echo \"export EDITOR='/bin/nvim'\" >> \"/home/\$username/.bashrc\"
+    echo \"export NNN_PLUG='f:finder;o:fzopen;p:fzplug;t:nmount;v:imgview'\" >> \"/home/\$username/.bashrc\"
+
+    # Setup KDE config directory
+    mkdir -p \"/home/\$username/.config\"
+
+    # Enable PipeWire autostart
+    mkdir -p \"/home/\$username/.config/autostart/\"
+    ln -s /usr/share/applications/pipewire.desktop \"/home/\$username/.config/autostart/\"
+
+    # Set alacritty as default terminal
+    cat >> \"/home/\$username/.config/kdeglobals\" << 'EOFKDE'
+[General]
+TerminalApplication=alacritty
+TerminalService=
+EOFKDE
+
+    # Fix all ownership for user home directory
+    chown -R \"\$username:\$username\" \"/home/\$username\"
+    chmod -R u+rw \"/home/\$username/.config\"
   "
 
   copy_configs "/mnt/home/$username" "$username"
 
-  echo "export EDITOR='/bin/nvim'" >> "/mnt/home/$username/.bashrc"
-  echo "export NNN_PLUG='f:finder;o:fzopen;p:fzplug;t:nmount;v:imgview'" >> "/mnt/home/$username/.bashrc"
-  # Configure NetworkManager
   mkdir -p /mnt/etc/NetworkManager/
   cat > /mnt/etc/NetworkManager/NetworkManager.conf << 'EOF'
 [main]
@@ -225,10 +252,11 @@ dns=default
 EOF
 
   echo "nameserver 8.8.8.8" > /mnt/etc/resolv.conf
+  echo "nameserver 1.1.1.1" >> /mnt/etc/resolv.conf
 
-#  if ! export_theme "Dracula" "/mnt/home/$username"; then
-#    echo "Failed to export theme" >&2
-#  fi
+  #  if ! export_theme "Dracula" "/mnt/home/$username"; then
+  #    echo "Failed to export theme" >&2
+  #  fi
 
   echo 'Install complete. Rebooting into the system'
   sleep 5
