@@ -1,6 +1,5 @@
 [stage0]
 dbus
-tlp
 libgcc-32bit
 libstdc++-32bit
 libdrm-32bit
@@ -11,26 +10,35 @@ mesa-vulkan-radeon-32bit
 nvidia-libs-32bit
 mesa-dri
 vulkan-loader
-tlp-rdw
 acpi
 rtkit
 pipewire
 alsa-pipewire
 libspa-bluetooth #Bluetooth codec for pipewire
-seatd
-turnstile
 chrony
-light
 polkit
-wayfire
-Waybar
-alacrittyw
+# Minimal KDE Plasma
+plasma-desktop          # Minimal plasma core
+plasma-workspace        # Workspace essentials
+kwin                    # Window manager/compositor
+plasma-wayland-protocols
+systemsettings5         # Settings app
+kde-cli-tools
+kscreen                 # Display management
+breeze                  # Theme
+powerdevil             # Power management
+konsole                 # Terminal
+# KDE Portal
+xdg-desktop-portal-kde
+kinfocenter            # System info
+bluedevil              # Bluetooth manager UI
+plasma-nm              # NetworkManager applet
+NetworkManager
+sddm
+egl-wayland
 neovim
 btop
-wl-clipboard
-wdisplays
 git
-fuzzel
 pavucontrol
 base-devel
 p7zip
@@ -38,13 +46,9 @@ nnn
 curl
 dragon # Drag and drop utility
 fzf # fuzzy search utility
-nwg-look
 gnome-themes-extra
-wlr-randr # Display configuration utility
 xdg-utils #Utils for xdg standard like set default app command
 xdg-desktop-portal #Used by various GTK apps to communicate over dbus
-xdg-desktop-portal-wlr #Used by various GTK apps to communicate over dbus. This is the wlr backend
-wcm #Configuration manager for wayfire
 gsettings-desktop-schemas # Mandatory for gtk themes to properly apply. Also used by nwg-look
 wine # Wine for running Windows applications
 qemu
