@@ -93,7 +93,6 @@ stage_zero(){
   # Display manager not saving config
   # Add resolv.conf for NetworkManager
 
-  copy_wpa_supplicant_conf
   xbps-install -Suy xbps
   xbps-install -y unzip
 
