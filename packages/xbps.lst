@@ -28,6 +28,14 @@ xf86-input-libinput    # Input drivers
 qt5-wayland            # Qt5 Wayland backend
 qt6-wayland            # Qt6 Wayland backend
 wl-clipboard
+wine
+wine-32bit
+wine-mono
+wine-gecko
+winetricks
+zenity
+flatpak
+keepassxc
 # Apps
 kleopatra
 neovim

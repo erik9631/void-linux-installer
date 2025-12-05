@@ -131,13 +131,13 @@ stage_zero(){
         exit 1
     fi
 
-    if ! xbps-install -Sy void-repo-multilib{,-nonfree}; then
-        echo 'Failed to install multilib and nonfree repositories' >&2
+    if ! xbps-install -Sy void-repo-nonfree void-repo-multilib{,-nonfree}; then
+        echo 'Failed to install nonfree, multilib and nonfree repositories' >&2
         exit 1
     fi
 
     if ! xbps-install -Su; then
-        echo 'Failed to update system after installing multilib and nonfree repositories' >&2
+        echo 'Failed to update system after installing nonfree, multilib and nonfree repositories' >&2
         exit 1
     fi
   "
@@ -224,6 +224,7 @@ stage_zero(){
     echo \"export EDITOR='/bin/nvim'\" >> \"/home/\$username/.bashrc\"
     echo \"export NNN_PLUG='f:finder;o:fzopen;p:fzplug;t:nmount;v:imgview'\" >> \"/home/\$username/.bashrc\"
     echo \"bind 'set enable-bracketed-paste off'\" >> \"/home/\$username/.bashrc\"
+    echo 'export XDG_DATA_DIRS=\"/var/lib/flatpak/exports/share:/usr/local/share:/usr/share\${XDG_DATA_DIRS:+:\$XDG_DATA_DIRS}\"' >> \"/home/\$username/.profile\"
 
 
     # Setup KDE config directory
