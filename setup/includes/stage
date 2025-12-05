@@ -60,6 +60,7 @@ stage_zero(){
 
   echo "Generating file system table..."
   "$SCRIPT_DIR"/scripts/genfstab -U /mnt >>/mnt/etc/fstab
+
   copy_scripts /mnt/bin/ /mnt/usr/lib/
 
   echo "Copying fonts..."
@@ -222,6 +223,8 @@ stage_zero(){
     # Bashrc additions
     echo \"export EDITOR='/bin/nvim'\" >> \"/home/\$username/.bashrc\"
     echo \"export NNN_PLUG='f:finder;o:fzopen;p:fzplug;t:nmount;v:imgview'\" >> \"/home/\$username/.bashrc\"
+    echo \"bind 'set enable-bracketed-paste off'\" >> \"/home/\$username/.bashrc\"
+
 
     # Setup KDE config directory
     mkdir -p \"/home/\$username/.config\"
@@ -244,18 +247,50 @@ EOFKDE
 
   copy_configs "/mnt/home/$username" "$username"
 
+
   mkdir -p /mnt/etc/NetworkManager/
   cat > /mnt/etc/NetworkManager/NetworkManager.conf << 'EOF'
 [main]
 dns=default
+rc-manager=file
+
+[logging]
+level=INFO
 EOF
 
+  # Remove any symlink and create regular file
+  if [ -L /mnt/etc/resolv.conf ]; then
+    rm /mnt/etc/resolv.conf
+  fi
+
+  # Write fallback DNS (NetworkManager will replace on first connection)
   echo "nameserver 8.8.8.8" > /mnt/etc/resolv.conf
   echo "nameserver 1.1.1.1" >> /mnt/etc/resolv.conf
+  echo 'Creating rc.local for sound device permissions fix...' >&2
+  cat > /mnt/etc/rc.local << 'EOFRC'
+#!/bin/sh
+echo "=== RC.LOCAL START at $(cat /proc/uptime) ===" > /var/log/rclocal.log
+ls -la /dev/snd/controlC0 >> /var/log/rclocal.log 2>&1
+sleep 3
+echo "=== RC.LOCAL AFTER SLEEP at $(cat /proc/uptime) ===" >> /var/log/rclocal.log
+ls -la /dev/snd/controlC0 >> /var/log/rclocal.log 2>&1
+EOFRC
+  chmod +x /mnt/etc/rc.local
 
-  #  if ! export_theme "Dracula" "/mnt/home/$username"; then
-  #    echo "Failed to export theme" >&2
-  #  fi
+  # TEMPORARY FIX: Remove problematic KWallet portal service file
+  # This fixes KWallet PAM auto-unlock and NetworkManager WiFi password retrieval
+  # Issue: https://github.com/void-linux/void-packages/issues/57348
+  # Root cause: kf6-kwallet 6.18 introduced a portal service that causes a race condition
+  # with pam_kwallet5, preventing auto-unlock at login
+  # Trade-off: Sandboxed apps (Flatpak/Snap) won't be able to use KWallet through portal
+  # TODO: Remove this workaround once upstream bug is fixed
+  echo 'Applying temporary KWallet PAM integration fix...' >&2
+  if [ -f /mnt/usr/share/dbus-1/services/org.freedesktop.impl.portal.desktop.kwallet.service ]; then
+    rm /mnt/usr/share/dbus-1/services/org.freedesktop.impl.portal.desktop.kwallet.service
+    echo 'KWallet portal service file removed (temporary workaround)' >&2
+  else
+    echo 'KWallet portal service file not found (may already be fixed upstream)' >&2
+  fi
 
   echo 'Install complete. Rebooting into the system'
   sleep 5

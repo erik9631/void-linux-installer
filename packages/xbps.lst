@@ -27,7 +27,9 @@ xorg-minimal           # X server for SDDM
 xf86-input-libinput    # Input drivers
 qt5-wayland            # Qt5 Wayland backend
 qt6-wayland            # Qt6 Wayland backend
+wl-clipboard
 # Apps
+kleopatra
 neovim
 btop
 git

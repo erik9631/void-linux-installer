@@ -83,6 +83,12 @@ optstring_apply_quirks() {
         optstring_append_option "$varname" "codepage=${codepage#cp}"
       fi
       ;;
+    ext2|ext3|ext4)
+      # Enable ACL support for ext filesystems (required for elogind/uaccess)
+      if ! optstring_has_option "$varname" acl && ! optstring_has_option "$varname" noacl; then
+        optstring_append_option "$varname" "acl"
+      fi
+      ;;
   esac
 }
 

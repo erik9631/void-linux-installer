@@ -15,3 +15,4 @@ opt.autoindent = true    -- Copy indent from current line when starting a new li
 opt.smartindent = true   -- Smart autoindenting when starting a new line
 vim.cmd.colorscheme "astrodark"
 opt.termguicolors = true
+opt.clipboard = "unnamedplus"
