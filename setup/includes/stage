@@ -224,8 +224,6 @@ stage_zero(){
     echo \"export EDITOR='/bin/nvim'\" >> \"/home/\$username/.bashrc\"
     echo \"export NNN_PLUG='f:finder;o:fzopen;p:fzplug;t:nmount;v:imgview'\" >> \"/home/\$username/.bashrc\"
     echo \"bind 'set enable-bracketed-paste off'\" >> \"/home/\$username/.bashrc\"
-    echo 'export XDG_DATA_DIRS=\"/var/lib/flatpak/exports/share:/usr/local/share:/usr/share\${XDG_DATA_DIRS:+:\$XDG_DATA_DIRS}\"' >> \"/home/\$username/.profile\"
-
 
     # Setup KDE config directory
     mkdir -p \"/home/\$username/.config\"
