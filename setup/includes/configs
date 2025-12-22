@@ -26,6 +26,7 @@ function copy_configs(){
 }
 export -f copy_configs
 
+
 function copy_wpa_supplicant_conf(){
   local src=/etc/wpa_supplicant/wpa_supplicant.conf
   local dst=/mnt/etc/wpa_supplicant/wpa_supplicant.conf

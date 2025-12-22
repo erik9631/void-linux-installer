@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=nnn
+Comment=Terminal file manager
+Exec=nnn-gui %f
+Terminal=false
+Icon=nnn
+MimeType=inode/directory
+Categories=System;FileTools;FileManager;ConsoleOnly
+Keywords=File;Manager;Management;Explorer;Launcher
+StartupWMClass=nnn

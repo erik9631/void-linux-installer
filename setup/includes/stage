@@ -12,6 +12,9 @@ source "$SCRIPT_DIR/includes/utils"
 # shellcheck source=configs
 source "$SCRIPT_DIR/includes/configs"
 
+# shellcheck source=desktop
+source "$SCRIPT_DIR/includes/desktop"
+
 # shellcheck source=package_installer
 source "$SCRIPT_DIR/includes/package_installer"
 
@@ -237,6 +240,7 @@ stage_zero(){
 [General]
 TerminalApplication=alacritty
 TerminalService=
+BrowserApplication=!dolphin.desktop
 EOFKDE
 
     # Fix all ownership for user home directory
@@ -245,6 +249,7 @@ EOFKDE
   "
 
   copy_configs "/mnt/home/$username" "$username"
+  copy_desktop_files
 
 
   mkdir -p /mnt/etc/NetworkManager/

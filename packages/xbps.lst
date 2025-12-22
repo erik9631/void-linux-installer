@@ -38,6 +38,8 @@ flatpak
 keepassxc
 # Apps
 kleopatra
+dolphin
+ark
 neovim
 btop
 git

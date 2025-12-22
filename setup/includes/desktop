@@ -1,0 +1,18 @@
+#!/bin/bash
+
+
+function copy_desktop_files(){
+  local desktop_dest="/mnt/usr/share/applications"
+
+  # Create destination if it doesn't exist
+  mkdir -p "$desktop_dest"
+
+  # Copy desktop files
+  if ! cp -rv "$SCRIPT_DIR"/../desktop/* "$desktop_dest"/; then
+    echo "Failed to copy desktop files to $desktop_dest" >&2
+    return 1
+  fi
+
+  echo "Desktop files copied successfully" >&2
+}
+export -f copy_desktop_files
