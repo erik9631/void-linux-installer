@@ -225,7 +225,6 @@ stage_zero(){
 
     # Bashrc additions
     echo \"export EDITOR='/bin/nvim'\" >> \"/home/\$username/.bashrc\"
-    echo \"export NNN_PLUG='f:finder;o:fzopen;p:fzplug;t:nmount;v:imgview'\" >> \"/home/\$username/.bashrc\"
     echo \"bind 'set enable-bracketed-paste off'\" >> \"/home/\$username/.bashrc\"
 
     # Setup KDE config directory
