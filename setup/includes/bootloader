@@ -1,20 +1,23 @@
 #!/bin/bash
 
+source "$SCRIPT_DIR/includes/kernel_signing"
+# shellcheck source=kernel_signing
+
 get_boot_mode() {
     while true; do
         read -rp "Install GRUB for UEFI or BIOS? [1/2]: " choice
-        case "${choice,,}" in  # ${choice,,} converts to lowercase
-            1)
-                echo "UEFI"
-                return 0
-                ;;
-            2)
-                echo "BIOS"
-                return 0
-                ;;
-            *)
-                echo "Please enter '1' or '2'" >&2
-                ;;
+        case "${choice,,}" in # ${choice,,} converts to lowercase
+        1)
+            echo "UEFI"
+            return 0
+            ;;
+        2)
+            echo "BIOS"
+            return 0
+            ;;
+        *)
+            echo "Please enter '1' or '2'" >&2
+            ;;
         esac
     done
 }
@@ -26,30 +29,29 @@ get_grub_target() {
     boot_mode=$1
 
     case "$architecture" in
-        x86_64)
-            if [[ "$boot_mode" == "UEFI" ]]; then
-                target="x86_64-efi"
-            else
-                target="i386-pc"
-            fi
-            ;;
-        i*86)
-            if [[ "$boot_mode" == "UEFI" ]]; then
-                target="i386-efi"
-            else
-                target="i386-pc"
-            fi
-            ;;
-        *)
-            echo "Unsupported architecture: $architecture" >&2
-            return 1
-            ;;
+    x86_64)
+        if [[ "$boot_mode" == "UEFI" ]]; then
+            target="x86_64-efi"
+        else
+            target="i386-pc"
+        fi
+        ;;
+    i*86)
+        if [[ "$boot_mode" == "UEFI" ]]; then
+            target="i386-efi"
+        else
+            target="i386-pc"
+        fi
+        ;;
+    *)
+        echo "Unsupported architecture: $architecture" >&2
+        return 1
+        ;;
     esac
 
     echo "$target"
 }
 export -f get_grub_target
-
 
 install_grub() {
     set -e
@@ -110,3 +112,254 @@ install_grub() {
     fi
 }
 export -f install_grub
+
+# ============================================================================
+# Secure Boot Functions
+# ============================================================================
+
+ask_secure_boot() {
+    local boot_mode=$1
+
+    # Only applicable for UEFI
+    if [[ "$boot_mode" != "UEFI" ]]; then
+        return 1
+    fi
+
+    echo ""
+    echo "=========================================="
+    echo "Secure Boot Setup"
+    echo "=========================================="
+    echo "This will:"
+    echo "  - Use Ubuntu's signed shim and GRUB (trusted by Microsoft)"
+    echo "  - Create MOK keys to sign your Void Linux kernel"
+    echo "  - Automatically sign kernels after updates"
+    echo ""
+    read -rp "Do you want to setup Secure Boot? [y/N]: " choice
+    case "${choice,,}" in
+    y | yes)
+        return 0
+        ;;
+    *)
+        echo "Skipping Secure Boot setup."
+        return 1
+        ;;
+    esac
+}
+export -f ask_secure_boot
+
+download_signed_bootloaders() {
+    local temp_dir=$1
+
+    echo "Downloading signed bootloaders from Ubuntu..."
+    local shim_url="https://launchpad.net/ubuntu/+archive/primary/+files/shim-signed_1.40.9+15.8-0ubuntu1_amd64.deb"
+    local grub_url="https://launchpad.net/ubuntu/+archive/primary/+files/grub-efi-amd64-signed_1.187.6+2.06-2ubuntu14.4_amd64.deb"
+
+    if ! wget -q --show-progress "$shim_url" -O "$temp_dir/shim-signed.deb"; then
+        echo "Failed to download shim" >&2
+        return 1
+    fi
+
+    if ! wget -q --show-progress "$grub_url" -O "$temp_dir/grub-efi-amd64-signed.deb"; then
+        echo "Failed to download grub" >&2
+        return 1
+    fi
+
+    echo "Extracting bootloaders..."
+    dpkg -x "$temp_dir/shim-signed.deb" "$temp_dir/shim"
+    dpkg -x "$temp_dir/grub-efi-amd64-signed.deb" "$temp_dir/grub"
+
+    return 0
+}
+export -f download_signed_bootloaders
+
+install_signed_bootloaders() {
+    local temp_dir=$1
+
+    echo "Installing signed bootloaders..."
+
+    # Create the void_grub directory
+    mkdir -p /boot/efi/EFI/void_grub
+
+    # Copy the signed bootloaders
+    if ! cp "$temp_dir/shim/usr/lib/shim/mmx64.efi" /boot/efi/EFI/void_grub/mmx64.efi; then
+        echo "Failed to copy mmx64.efi" >&2
+        return 1
+    fi
+
+    if ! cp "$temp_dir/shim/usr/lib/shim/shimx64.efi.signed.latest" /boot/efi/EFI/void_grub/shimx64.efi; then
+        echo "Failed to copy shimx64.efi" >&2
+        return 1
+    fi
+
+    if ! cp "$temp_dir/grub/usr/lib/grub/x86_64-efi-signed/grubx64.efi.signed" /boot/efi/EFI/void_grub/grubx64.efi; then
+        echo "Failed to copy grubx64.efi" >&2
+        return 1
+    fi
+
+    # Create the Ubuntu grub directory (required by Ubuntu's signed grub)
+    mkdir -p /boot/efi/EFI/Ubuntu
+
+    # Generate grub config in Ubuntu directory
+    echo "Generating GRUB configuration for Secure Boot..."
+    if ! grub-mkconfig -o /boot/efi/EFI/Ubuntu/grub.cfg; then
+        echo "Failed to generate GRUB config" >&2
+        return 1
+    fi
+
+    return 0
+}
+export -f install_signed_bootloaders
+
+create_mok_keys() {
+    local mok_dir=$1
+
+    echo "Creating MOK (Machine Owner Keys)..."
+    mkdir -p "$mok_dir"
+
+    if ! openssl req -new -x509 -newkey rsa:2048 \
+        -keyout "$mok_dir/MOK.key" \
+        -out "$mok_dir/MOK.crt" \
+        -nodes -days 3650 \
+        -subj "/CN=Void Linux MOK/"; then
+        echo "Failed to create MOK certificate" >&2
+        return 1
+    fi
+
+    if ! openssl x509 -in "$mok_dir/MOK.crt" -out "$mok_dir/MOK.der" -outform DER; then
+        echo "Failed to convert MOK certificate to DER format" >&2
+        return 1
+    fi
+
+    echo "MOK keys created successfully at $mok_dir"
+    return 0
+}
+export -f create_mok_keys
+
+create_uefi_boot_entry() {
+    echo "Creating UEFI boot entry..."
+
+    # Find the EFI partition device
+    local efi_partition efi_disk efi_part_num
+    efi_partition=$(findmnt -n -o SOURCE /boot/efi)
+
+    if [[ -z "$efi_partition" ]]; then
+        echo "Could not find EFI partition" >&2
+        return 1
+    fi
+
+    # Extract disk and partition number
+    if [[ $efi_partition =~ ^(/dev/[a-z]+)([0-9]+)$ ]]; then
+        efi_disk="${BASH_REMATCH[1]}"
+        efi_part_num="${BASH_REMATCH[2]}"
+    elif [[ $efi_partition =~ ^(/dev/nvme[0-9]+n[0-9]+)p([0-9]+)$ ]]; then
+        efi_disk="${BASH_REMATCH[1]}"
+        efi_part_num="${BASH_REMATCH[2]}"
+    else
+        echo "Could not parse EFI partition: $efi_partition" >&2
+        return 1
+    fi
+
+    # Create UEFI boot entry
+    if ! efibootmgr -c -d "$efi_disk" -p "$efi_part_num" \
+        -L "Void Linux (Secure Boot)" \
+        -l "\\EFI\\void_grub\\shimx64.efi"; then
+        echo "Warning: Failed to create UEFI boot entry" >&2
+        echo "You may need to manually create it or set boot order in BIOS"
+        return 1
+    fi
+
+    return 0
+}
+export -f create_uefi_boot_entry
+
+install_secure_boot() {
+    local boot_mode=$1
+
+    # Ask user if they want secure boot
+    if ! ask_secure_boot "$boot_mode"; then
+        return 0
+    fi
+
+    echo "Setting up Secure Boot..."
+
+    # Install required packages
+    echo "Installing required packages..."
+    if ! xbps-install -y dpkg mokutil sbsigntool wget openssl; then
+        echo "Failed to install required packages for Secure Boot" >&2
+        return 1
+    fi
+
+    # Create temporary directory for downloads
+    local temp_dir="/tmp/secureboot"
+    mkdir -p "$temp_dir"
+
+    # Download and install signed bootloaders
+    if ! download_signed_bootloaders "$temp_dir"; then
+        rm -rf "$temp_dir"
+        return 1
+    fi
+
+    if ! install_signed_bootloaders "$temp_dir"; then
+        rm -rf "$temp_dir"
+        return 1
+    fi
+
+    # Create MOK keys
+    local mok_dir="/root/mok-keys"
+    if ! create_mok_keys "$mok_dir"; then
+        rm -rf "$temp_dir"
+        return 1
+    fi
+
+    # Setup kernel signing (from kernel_signing module)
+    if ! setup_kernel_signing "$mok_dir"; then
+        rm -rf "$temp_dir"
+        return 1
+    fi
+
+    # Create UEFI boot entry
+    if ! create_uefi_boot_entry; then
+        echo "Warning: Boot entry creation failed, but continuing..."
+    fi
+
+    # Schedule MOK enrollment
+    if ! schedule_mok_enrollment "$mok_dir"; then
+        echo "Warning: MOK enrollment scheduling failed"
+        echo "You may need to manually run: mokutil --import $mok_dir/MOK.der"
+    fi
+
+    # Clean up
+    rm -rf "$temp_dir"
+
+    # Print success message
+    print_secure_boot_success
+
+    return 0
+}
+export -f install_secure_boot
+
+print_secure_boot_success() {
+    echo ""
+    echo "=========================================="
+    echo "✓ Secure Boot Setup Complete!"
+    echo "=========================================="
+    echo ""
+    echo "IMPORTANT: On next boot, you will see the MOK Manager (blue screen)."
+    echo ""
+    echo "Follow these steps:"
+    echo "  1. Select 'Enroll MOK'"
+    echo "  2. Select 'Continue'"
+    echo "  3. Select 'Yes'"
+    echo "  4. Enter the password you just set"
+    echo "  5. Select 'Reboot'"
+    echo ""
+    echo "After enrollment:"
+    echo "  - Your system will boot with Secure Boot enabled"
+    echo "  - Kernels will be automatically signed after updates"
+    echo "  - You can manually sign kernels with: /usr/local/bin/sign-kernel"
+    echo ""
+    echo "Boot entries created:"
+    efibootmgr | grep -i void || echo "  (Run 'efibootmgr' to view)"
+    echo ""
+}
+export -f print_secure_boot_success

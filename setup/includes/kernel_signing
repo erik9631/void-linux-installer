@@ -1,0 +1,219 @@
+#!/bin/bash
+
+sign_single_kernel() {
+  local kernel_path=$1
+  local mok_key=$2
+  local mok_cert=$3
+
+  if [[ ! -f "$kernel_path" ]]; then
+    echo "Kernel not found: $kernel_path" >&2
+    return 1
+  fi
+
+  echo "Signing kernel: $kernel_path"
+
+  if ! sbsign --key "$mok_key" \
+    --cert "$mok_cert" \
+    "$kernel_path" \
+    --output "$kernel_path.signed"; then
+    echo "Failed to sign kernel: $kernel_path" >&2
+    return 1
+  fi
+
+  if ! mv "$kernel_path.signed" "$kernel_path"; then
+    echo "Failed to move signed kernel" >&2
+    return 1
+  fi
+
+  echo "✓ Kernel signed successfully"
+  return 0
+}
+export -f sign_single_kernel
+
+
+sign_all_kernels() {
+  local mok_dir=$1
+  local mok_key="$mok_dir/MOK.key"
+  local mok_cert="$mok_dir/MOK.crt"
+
+  if [[ ! -f "$mok_key" ]] || [[ ! -f "$mok_cert" ]]; then
+    echo "Error: MOK keys not found at $mok_dir" >&2
+    return 1
+  fi
+
+  echo "Signing all kernels in /boot..."
+
+  local signed_count=0
+  local failed_count=0
+
+  for kernel in /boot/vmlinuz-*; do
+    if [[ -f "$kernel" ]]; then
+      if sign_single_kernel "$kernel" "$mok_key" "$mok_cert"; then
+        ((signed_count++))
+      else
+        ((failed_count++))
+      fi
+    fi
+  done
+
+  echo "Kernel signing complete: $signed_count signed, $failed_count failed"
+
+  if ((failed_count > 0)); then
+    return 1
+  fi
+
+  return 0
+}
+export -f sign_all_kernels
+
+
+create_kernel_signing_script() {
+  local script_path="/usr/local/bin/sign-kernel"
+
+  echo "Creating kernel signing script at $script_path..."
+
+  cat > "$script_path" << 'EOFKERNEL'
+#!/bin/bash
+# Automatically sign kernel after updates
+
+set -e
+
+MOK_KEY="/root/mok-keys/MOK.key"
+MOK_CERT="/root/mok-keys/MOK.crt"
+
+if [[ ! -f "$MOK_KEY" ]] || [[ ! -f "$MOK_CERT" ]]; then
+    echo "Error: MOK keys not found at /root/mok-keys/" >&2
+    exit 1
+fi
+
+echo "Signing all kernels in /boot..."
+for kernel in /boot/vmlinuz-*; do
+    if [[ -f "$kernel" ]]; then
+        echo "  Signing: $kernel"
+        if sbsign --key "$MOK_KEY" --cert "$MOK_CERT" "$kernel" --output "$kernel.signed"; then
+            mv "$kernel.signed" "$kernel"
+            echo "  ✓ Signed successfully"
+        else
+            echo "  ✗ Failed to sign $kernel" >&2
+        fi
+    fi
+done
+
+# Regenerate grub config
+echo "Regenerating GRUB configuration..."
+if grub-mkconfig -o /boot/efi/EFI/Ubuntu/grub.cfg; then
+    echo "✓ GRUB configuration updated"
+else
+    echo "✗ Failed to update GRUB configuration" >&2
+    exit 1
+fi
+
+echo "Kernel signing complete."
+EOFKERNEL
+
+  if ! chmod +x "$script_path"; then
+    echo "Failed to make script executable" >&2
+    return 1
+  fi
+
+  echo "✓ Kernel signing script created"
+  return 0
+}
+export -f create_kernel_signing_script
+
+
+create_xbps_hook() {
+  local hook_path="/etc/xbps.d/kernel-sign.sh"
+
+  echo "Creating XBPS hook at $hook_path..."
+
+  mkdir -p /etc/xbps.d
+
+  cat > "$hook_path" << 'EOFHOOK'
+#!/bin/bash
+# XBPS hook to sign kernels after installation/update
+
+case "$XBPS_TARGET_PKG" in
+    linux[0-9]*)
+        if [[ "$XBPS_TARGET_ACTION" == "install-update" ]] || [[ "$XBPS_TARGET_ACTION" == "install" ]]; then
+            echo "==> Kernel package updated, signing kernel..."
+            if /usr/local/bin/sign-kernel; then
+                echo "==> Kernel signing completed successfully"
+            else
+                echo "==> Warning: Kernel signing failed" >&2
+            fi
+        fi
+        ;;
+esac
+EOFHOOK
+
+  if ! chmod +x "$hook_path"; then
+    echo "Failed to make hook executable" >&2
+    return 1
+  fi
+
+  echo "✓ XBPS hook created"
+  return 0
+}
+export -f create_xbps_hook
+
+
+schedule_mok_enrollment() {
+  local mok_dir=$1
+  local mok_der="$mok_dir/MOK.der"
+
+  if [[ ! -f "$mok_der" ]]; then
+    echo "MOK certificate not found: $mok_der" >&2
+    return 1
+  fi
+
+  echo "Scheduling MOK key enrollment..."
+
+  local mok_password
+  read -sp "Set a password for MOK enrollment (you'll need this on next boot): " mok_password
+  echo ""
+
+  if [[ -z "$mok_password" ]]; then
+    echo "Error: Password cannot be empty" >&2
+    return 1
+  fi
+
+  if ! echo "$mok_password" | mokutil --import "$mok_der" --password-stdin; then
+    echo "Failed to schedule MOK enrollment" >&2
+    return 1
+  fi
+
+  echo "✓ MOK enrollment scheduled"
+  return 0
+}
+export -f schedule_mok_enrollment
+
+
+setup_kernel_signing() {
+  local mok_dir=$1
+
+  echo "Setting up automatic kernel signing..."
+
+  # Sign current kernel(s)
+  echo "Signing current kernel..."
+  if ! sign_all_kernels "$mok_dir"; then
+    echo "Failed to sign kernels" >&2
+    return 1
+  fi
+
+  # Create signing script
+  if ! create_kernel_signing_script; then
+    echo "Failed to create signing script" >&2
+    return 1
+  fi
+
+  # Create XBPS hook
+  if ! create_xbps_hook; then
+    echo "Failed to create XBPS hook" >&2
+    return 1
+  fi
+
+  echo "✓ Kernel signing automation setup complete"
+  return 0
+}
+export -f setup_kernel_signing

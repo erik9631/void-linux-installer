@@ -129,6 +129,14 @@ stage_zero(){
         exit 1
     fi
 
+    echo 'Secure boot...'
+    if ! install_secure_boot \"\$boot_mode\"; then
+        echo 'Secure boot installation failed' >&2
+        exit 1
+    fi
+
+
+
     if ! xbps-reconfigure -fa; then
         echo 'xbps-reconfigure failed' >&2
         exit 1
