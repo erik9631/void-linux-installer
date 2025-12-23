@@ -168,6 +168,12 @@ schedule_mok_enrollment() {
   fi
 
   echo "Scheduling MOK key enrollment..."
+  echo ""
+  echo "You will now be prompted to set a password for MOK enrollment."
+  echo "This password will be needed on first boot to confirm key enrollment."
+  echo "The password will not be visible as you type (this is normal)."
+  echo ""
+  echo "enter password:"
 
   if ! mokutil --import "$mok_der";  then
     echo "Failed to schedule MOK enrollment" >&2
