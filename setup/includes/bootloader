@@ -151,8 +151,8 @@ download_signed_bootloaders() {
     local temp_dir=$1
 
     echo "Downloading signed bootloaders from Ubuntu..."
-    local shim_url="https://launchpad.net/ubuntu/+archive/primary/+files/shim-signed_1.40.9+15.8-0ubuntu1_amd64.deb"
-    local grub_url="https://launchpad.net/ubuntu/+archive/primary/+files/grub-efi-amd64-signed_1.187.6+2.06-2ubuntu14.4_amd64.deb"
+    local shim_url="http://archive.ubuntu.com/ubuntu/pool/main/s/shim-signed/shim-signed_1.59+15.8-0ubuntu2_amd64.deb"
+    local grub_url="http://archive.ubuntu.com/ubuntu/pool/main/g/grub2-signed/grub-efi-amd64-signed_1.187.6+2.06-2ubuntu14.4_amd64.deb"
 
     if ! wget -q --show-progress "$shim_url" -O "$temp_dir/shim-signed.deb"; then
         echo "Failed to download shim" >&2

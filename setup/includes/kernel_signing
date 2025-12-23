@@ -169,16 +169,7 @@ schedule_mok_enrollment() {
 
   echo "Scheduling MOK key enrollment..."
 
-  local mok_password
-  read -sp "Set a password for MOK enrollment (you'll need this on next boot): " mok_password
-  echo ""
-
-  if [[ -z "$mok_password" ]]; then
-    echo "Error: Password cannot be empty" >&2
-    return 1
-  fi
-
-  if ! echo "$mok_password" | mokutil --import "$mok_der" --password-stdin; then
+  if ! mokutil --import "$mok_der";  then
     echo "Failed to schedule MOK enrollment" >&2
     return 1
   fi
