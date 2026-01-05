@@ -22,6 +22,7 @@ polkit
 elogind                # Seat/session management
 # KDE Plasma
 kde-plasma             # Meta-package with everything
+gwenview
 NetworkManager
 sddm
 xorg-minimal           # X server for SDDM
