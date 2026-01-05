@@ -20,6 +20,7 @@ libspa-bluetooth
 chrony
 polkit
 elogind                # Seat/session management
+xrandr
 # KDE Plasma
 kde-plasma             # Meta-package with everything
 gwenview
