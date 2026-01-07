@@ -1,0 +1,101 @@
+#!/bin/sh
+
+if [ $(id -u) -ne 0 ]; then
+        echo "You must be root to run this."
+        exit 0
+fi
+
+missing=0
+for pkg in wget curl rsync ar; do
+        echo -n "Checking for $pkg..."
+        if [ ! -x "$(which $pkg 2>/dev/null)" ]; then
+                echo "FAIL."
+                missing=1
+        else
+                echo "OK"
+        fi
+done
+
+if [ "$missing" != "0" ]; then
+        echo "Install the required packages and try again."
+        exit
+fi
+
+USRNAME=$(echo ${SUDO_USER})
+DOWNLOADS="/home/${USRNAME}/Downloads"
+
+UPDATEVERSION=$(curl -s "https://plex.tv/downloads/latest/1?channel=16&build=linux-ubuntu-x86_64&distro=ubuntu" | awk -F "_" '{ print $2 }')
+
+#install plex
+echo -n "Grabbing plex... in a nice way... nothing inappropriate..."
+sudo -u ${USRNAME} wget -q --show-progress -O ${DOWNLOADS}/plex-${UPDATEVERSION}.deb "https://plex.tv/downloads/latest/1?channel=16&build=linux-ubuntu-x86_64&distro=ubuntu"
+echo "OK"
+
+echo -n "Making working directories..."
+sudo -u ${USRNAME} mkdir -p ${DOWNLOADS}/plexmediaserver
+PLEXDIR="${DOWNLOADS}/plexmediaserver"
+cd ${PLEXDIR}
+echo "OK"
+
+echo -n "Unpacking plex package..."
+sudo -u ${USRNAME} ar x ${DOWNLOADS}/plex-${UPDATEVERSION}.deb
+sudo -u ${USRNAME} tar Jxf ${PLEXDIR}/data.tar.xz
+echo "OK"
+
+echo -n "Moving files..."
+rsync -azru ${PLEXDIR}/usr/lib/ /usr/lib/
+rsync -azru ${PLEXDIR}/usr/share/doc/ /usr/share/doc/
+rsync -azru ${PLEXDIR}/usr/share/pixmaps/ /usr/share/pixmaps/
+rsync -azru ${PLEXDIR}/usr/share/applications/ /usr/share/applications/
+echo "OK"
+
+echo -n "Setting up plex environment..."
+if ! id -u _plex >/dev/null 2>&1; then
+        useradd _plex
+fi
+mkdir -p "/var/lib/plexmediaserver/Library/Application Support"
+usermod -d /var/lib/plexmediaserver _plex
+chown -R _plex:_plex /var/lib/plexmediaserver
+echo "OK"
+
+echo -n "Creating runit service..."
+mkdir -p /etc/sv/plexmediaserver
+cat > /etc/sv/plexmediaserver/run <<'EOF'
+#!/bin/sh
+export HOME=/var/lib/plexmediaserver
+export PLEX_MEDIA_SERVER_HOME=/usr/lib/plexmediaserver
+export PLEX_MEDIA_SERVER_MAX_PLUGIN_PROCS=6
+export LD_LIBRARY_PATH=/usr/lib/plexmediaserver/lib
+export TMPDIR=/tmp
+cd /usr/lib/plexmediaserver
+exec ./Plex\ Media\ Server
+EOF
+chmod +x /etc/sv/plexmediaserver/run
+
+# Create logging
+mkdir -p /etc/sv/plexmediaserver/log
+cat > /etc/sv/plexmediaserver/log/run <<'EOF'
+#!/bin/sh
+exec svlogd -tt ./
+EOF
+chmod +x /etc/sv/plexmediaserver/log/run
+
+# Create supervise directories
+mkdir -p /etc/sv/plexmediaserver/supervise
+mkdir -p /etc/sv/plexmediaserver/log/supervise
+chmod 755 /etc/sv/plexmediaserver/supervise
+chmod 755 /etc/sv/plexmediaserver/log/supervise
+
+if [ -L /var/service/plexmediaserver ]; then
+        rm /var/service/plexmediaserver
+fi
+ln -s /etc/sv/plexmediaserver /var/service/
+echo "OK"
+
+echo -n "Removing old files..."
+rm -rf ${PLEXDIR}
+rm -f ${DOWNLOADS}/plex-${UPDATEVERSION}.deb
+echo "OK"
+
+echo "DONE"
+exit 0
