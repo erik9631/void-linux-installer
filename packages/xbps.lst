@@ -13,6 +13,7 @@ openssl-devel
 zlib-devel # Python
 tk-devel # Python
 liblzma-devel # Python
+postgresql-libs-devel # Postgres libs
 mesa-dri
 mesa-demos
 vulkan-loader
