@@ -11,6 +11,8 @@ nvidia-libs-32bit
 alsa-lib-devel
 openssl-devel
 zlib-devel # Python
+tk-devel # Python
+liblzma-devel # Python
 mesa-dri
 mesa-demos
 vulkan-loader
