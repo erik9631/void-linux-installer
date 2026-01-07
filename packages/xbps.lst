@@ -10,6 +10,7 @@ mesa-vulkan-radeon-32bit
 nvidia-libs-32bit
 alsa-lib-devel
 openssl-devel
+zlib-devel # Python
 mesa-dri
 mesa-demos
 vulkan-loader
