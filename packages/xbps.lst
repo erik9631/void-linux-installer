@@ -15,6 +15,7 @@ tk-devel # Python
 liblzma-devel # Python
 postgresql-libs-devel # Postgres libs
 unrar
+whois
 mesa-dri
 mesa-demos
 vulkan-loader
