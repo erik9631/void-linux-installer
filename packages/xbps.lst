@@ -1,82 +1,177 @@
+# ============================================================
+# VOID LINUX INSTALLER SCRIPT
+# ============================================================
+# Usage: xbps-install -Sy $(grep -v '^#' installer.conf | grep -v '^\[' | grep -v '^$' | awk '{print $1}')
+# ============================================================
+
 [stage0]
-dbus
-libgcc-32bit
-libstdc++-32bit
-libdrm-32bit
-libglvnd-32bit
-mesa-dri-32bit
-vulkan-loader-32bit
-mesa-vulkan-radeon-32bit
-nvidia-libs-32bit
-alsa-lib-devel
-openssl-devel
-zlib-devel # Python
-tk-devel # Python
-liblzma-devel # Python
-postgresql-libs-devel # Postgres libs
-unrar
-whois
-mesa-dri
-mesa-demos
-vulkan-loader
-rtkit
-pipewire
-alsa-pipewire
-alsa-utils
-libspa-alsa
-libspa-bluetooth
-chrony
-polkit
-elogind                # Seat/session management
-xrandr
-# KDE Plasma
-kde-plasma             # Meta-package with everything
-gwenview
-NetworkManager
-sddm
-xorg-minimal           # X server for SDDM
-xf86-input-libinput    # Input drivers
-qt5-wayland            # Qt5 Wayland backend
-qt6-wayland            # Qt6 Wayland backend
-wl-clipboard
-wine
-wine-32bit
-wine-mono
-wine-gecko
-winetricks
-zenity
-flatpak
-keepassxc
-# Apps
-kleopatra
-dolphin
-ark
-neovim
-btop
-git
-pavucontrol
-base-devel
-p7zip
-curl
-dragon
-fzf
-gnome-themes-extra
-xdg-utils
-xdg-desktop-portal
-gsettings-desktop-schemas
-wine
-qemu
-qemu-ga
-spice-vdagent
-dnsmasq
-libvirt
-bridge-utils
-firefox
-qimgv
-onedrive
-kwallet
-kwallet-pam
-kwalletmanager
-alacritty
-bluez
-sof-firmware
+
+# === Repos (install these first before anything else) ===
+void-repo-nonfree                # Enables nonfree repo (steam, etc.)
+void-repo-multilib               # Enables 32-bit multilib repo
+void-repo-multilib-nonfree       # Enables 32-bit nonfree multilib repo
+
+# === Base System ===
+base-system                      # Core Void Linux base metapackage
+base-devel                       # Build tools: make, gcc, binutils, etc.
+dbus                             # D-Bus inter-process message bus
+elogind                          # Seat/session management (loginctl, etc.)
+polkit                           # Privilege escalation framework
+chrony                           # NTP time synchronization daemon
+grub-x86_64-efi                  # EFI bootloader
+
+# === Kernel ===
+linux6.18                        # Linux kernel
+linux6.18-headers                # Kernel headers (required for DKMS/drivers)
+
+# === 32-bit / Multilib ===
+libgcc-32bit                     # 32-bit GCC runtime
+libstdc++-32bit                  # 32-bit C++ standard library
+libdrm-32bit                     # 32-bit DRM library (Wine/Steam)
+libglvnd-32bit                   # 32-bit GL vendor-neutral dispatch
+mesa-dri-32bit                   # 32-bit Mesa DRI drivers
+vulkan-loader-32bit              # 32-bit Vulkan loader (Wine/Steam)
+mesa-vulkan-radeon-32bit         # 32-bit Vulkan driver for AMD
+nvidia-libs-32bit                # 32-bit Nvidia libs (Wine/Steam)
+
+# === Graphics ===
+mesa-dri                         # Mesa DRI GPU drivers
+mesa-demos                       # Mesa test/benchmark tools (glxgears etc.)
+vulkan-loader                    # Vulkan API loader
+fontconfig                       # Font discovery and configuration
+
+# === Audio ===
+pipewire                         # Modern audio/video server
+alsa-pipewire                    # ALSA → PipeWire compatibility bridge
+alsa-utils                       # ALSA CLI tools (alsamixer, aplay, etc.)
+libspa-alsa                      # PipeWire SPA plugin for ALSA
+libspa-bluetooth                 # PipeWire SPA plugin for Bluetooth audio
+rtkit                            # Realtime scheduling for audio threads
+pavucontrol                      # PipeWire/PulseAudio volume control GUI
+sof-firmware                     # Sound Open Firmware (Intel/AMD audio chips)
+
+# === Bluetooth ===
+bluez                            # Linux Bluetooth protocol stack
+
+# === Display / Session ===
+xorg-minimal                     # Minimal X server (needed by SDDM)
+sddm                             # Display/login manager
+xrandr                           # X display resolution/rotation tool
+xf86-input-libinput              # libinput driver for X (keyboard/mouse)
+
+# === KDE Plasma Desktop ===
+kde-plasma                       # KDE Plasma metapackage (full desktop)
+qt5-wayland                      # Qt5 Wayland backend
+qt6-wayland                      # Qt6 Wayland backend
+wl-clipboard                     # Wayland clipboard CLI (wl-copy/wl-paste)
+gwenview                         # KDE image viewer
+kate                             # KDE feature-rich text editor
+kdeconnect                       # KDE phone/device integration
+kleopatra                        # KDE certificate and PGP key manager
+dolphin                          # KDE file manager
+ark                              # KDE archive manager (zip, tar, etc.)
+spectacle                        # KDE screenshot tool
+kwallet                          # KDE wallet for credential storage
+kwallet-pam                      # PAM module for auto-unlocking KWallet
+kwalletmanager                   # KDE wallet manager GUI
+gnome-themes-extra               # GTK2/3 themes (Adwaita dark, for non-KDE apps)
+gsettings-desktop-schemas        # GSettings schemas required by GTK apps
+xdg-utils                        # XDG desktop integration tools (xdg-open etc.)
+xdg-desktop-portal               # Portal backend for Flatpak/sandboxed apps
+
+# === Networking ===
+NetworkManager                   # Network connection manager
+NetworkManager-openvpn           # OpenVPN plugin for NetworkManager
+openvpn                          # OpenVPN client daemon
+dnsmasq                          # Lightweight DNS/DHCP (used by libvirt/VMs)
+bridge-utils                     # Network bridge tools (brctl, for VMs)
+wget                             # CLI file downloader
+curl                             # CLI HTTP/S client
+rsync                            # Fast file sync/transfer tool
+tcpdump                          # CLI network packet analyzer
+whois                            # WHOIS domain lookup tool
+
+# === Virtualization ===
+qemu                             # QEMU machine emulator/hypervisor
+qemu-ga                          # QEMU guest agent (for VM host-guest comms)
+libvirt                          # Virtualization management API (virt-manager etc.)
+spice-vdagent                    # SPICE guest agent (clipboard/resolution in VMs)
+
+# === Wine / Windows Compatibility ===
+wine                             # Windows compatibility layer
+wine-32bit                       # Wine 32-bit support
+wine-mono                        # Wine bundled .NET runtime replacement
+wine-gecko                       # Wine bundled IE/HTML engine
+winetricks                       # Helper script for Wine app setup
+zenity                           # GTK dialog boxes (used by winetricks)
+
+# === Filesystem Support ===
+ntfs-3g                          # NTFS read/write support
+exfatprogs                       # exFAT filesystem tools (USB drives, SD cards)
+
+# === Smart Card ===
+pcsclite                         # PC/SC smart card daemon
+pcsc-ccid                        # CCID smart card reader driver
+
+# === Database ===
+postgresql-17                    # PostgreSQL database server
+postgresql-client-17             # PostgreSQL CLI client tools (psql)
+postgresql17-contrib             # PostgreSQL contrib extensions
+
+# === Development Libraries ===
+alsa-lib-devel                   # ALSA development headers
+openssl-devel                    # OpenSSL development headers
+zlib-devel                       # zlib compression dev headers
+tk-devel                         # Tcl/Tk dev headers (Python tkinter builds)
+liblzma-devel                    # XZ/LZMA dev headers
+postgresql-libs-devel            # PostgreSQL client library dev headers
+bzip2-devel                      # bzip2 dev headers
+libffi-devel                     # Foreign Function Interface dev headers
+ncurses-devel                    # ncurses terminal dev headers
+readline-devel                   # GNU readline dev headers
+sqlite-devel                     # SQLite embedded DB dev headers
+eudev-libudev-devel              # udev dev headers (for hardware detection)
+cross-x86_64-linux-musl          # Cross-compilation toolchain targeting musl libc
+
+# === Terminals ===
+alacritty                        # GPU-accelerated terminal (primary)
+xterm                            # Minimal fallback X terminal
+
+# === Applications ===
+neovim                           # Modern extensible Vim-based text editor
+btop                             # Interactive resource/process monitor
+git                              # Version control system
+keepassxc                        # Local password manager
+libreoffice                      # Full office suite (Writer, Calc, Impress)
+thunderbird                      # Email and calendar client
+firefox                          # Web browser
+qbittorrent                      # BitTorrent client
+vlc                              # Versatile media player
+qimgv                            # Fast image viewer
+dragon                           # Drag-and-drop source/sink utility
+remmina                          # Remote desktop client (RDP, VNC, SSH)
+freerdp                          # RDP client library and tools
+flatpak                          # Flatpak sandboxed app support
+onedrive                         # Microsoft OneDrive sync client
+steam                            # Steam gaming platform (via nonfree repo)
+fzf                              # Fuzzy finder for CLI
+ripgrep                          # Extremely fast recursive grep (rg)
+p7zip                            # 7-Zip CLI archive tool
+unrar                            # RAR archive extractor
+unar                             # Universal archive extractor (handles many formats)
+zip                              # ZIP archive creation tool
+dpkg                             # Debian package tool (useful for inspecting .debs)
+
+# ============================================================
+# [stage1-src] — MANUAL / xbps-src INSTALLS
+# ============================================================
+# These CANNOT be installed via xbps-install directly.
+# Either build from void-packages (xbps-src) or download manually.
+# Repo: https://github.com/void-linux/void-packages
+# ============================================================
+
+# discord          # Discord desktop — xbps-src (nonfree)
+# Signal-Desktop   # Signal messenger — xbps-src (nonfree)
+# nvidia           # Nvidia proprietary driver — xbps-src (nonfree)
+# spotify          # Spotify — xbps-src (nonfree)
+# google-chrome    # Google Chrome — xbps-src (nonfree)
