@@ -123,7 +123,7 @@ function check_root_user() {
 export -f check_root_user
 
 function get_current_stage_from_var() {
-    local stage
+    local install_system
     stage=$(ls /var/install | grep -Eo 'stage[0-9]' | grep -Eo '[0-9]')
 
     if [[ -n $stage ]]; then
@@ -202,7 +202,7 @@ function x_chroot() {
 
   printf "\033[1m=> Entering chroot $CHROOT\033[m\n"
   export PS1="[xchroot $CHROOT] $PS1"
-  chroot "$CHROOT" "${@:-$INNER_SHELL}"
+  chroot_setup "$CHROOT" "${@:-$INNER_SHELL}"
   local STATUS=$?
   if [ $STATUS -ne 0 ]; then
     printf "\033[1m=> Exited chroot $CHROOT\033[m\n"

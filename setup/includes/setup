@@ -1,0 +1,59 @@
+#!/bin/bash
+
+setup_network_config() {
+  echo 'Configuring NetworkManager...' >&2
+  mkdir -p /mnt/etc/NetworkManager/
+  cat > /mnt/etc/NetworkManager/NetworkManager.conf << 'EOF'
+[main]
+dns=default
+rc-manager=file
+
+[logging]
+level=INFO
+EOF
+
+  # Remove any symlink and create regular file
+  if [ -L /mnt/etc/resolv.conf ]; then
+    rm /mnt/etc/resolv.conf
+  fi
+
+  # Write fallback DNS (NetworkManager will replace on first connection)
+  echo 'nameserver 8.8.8.8' > /mnt/etc/resolv.conf
+  echo 'nameserver 1.1.1.1' >> /mnt/etc/resolv.conf
+}
+
+setup_rc_local() {
+  # rc.local runs once at the end of boot (before login prompt).
+  # Used here to log /dev/snd/controlC0 state before and after a short delay,
+  # working around a timing issue where the sound device isn't ready early enough
+  # for PipeWire/ALSA to initialize on first login.
+  echo 'Creating rc.local...' >&2
+  cat > /mnt/etc/rc.local << 'EOFRC'
+#!/bin/sh
+echo "=== RC.LOCAL START at $(cat /proc/uptime) ===" > /var/log/rclocal.log
+ls -la /dev/snd/controlC0 >> /var/log/rclocal.log 2>&1
+sleep 3
+echo "=== RC.LOCAL AFTER SLEEP at $(cat /proc/uptime) ===" >> /var/log/rclocal.log
+ls -la /dev/snd/controlC0 >> /var/log/rclocal.log 2>&1
+EOFRC
+  chmod +x /mnt/etc/rc.local
+}
+
+#!/bin/bash
+
+
+function copy_desktop_files(){
+  local desktop_dest="/mnt/usr/share/applications"
+
+  # Create destination if it doesn't exist
+  mkdir -p "$desktop_dest"
+
+  # Copy desktop files
+  if ! cp -rv "$SCRIPT_DIR"/../desktop/* "$desktop_dest"/; then
+    echo "Failed to copy desktop files to $desktop_dest" >&2
+    return 1
+  fi
+
+  echo "Desktop files copied successfully" >&2
+}
+export -f copy_desktop_files
