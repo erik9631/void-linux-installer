@@ -131,6 +131,7 @@ install_system(){
   copy_configs "/mnt/home/$username" "$username"
   copy_desktop_files
   setup_nnn "$username"
+  setup_nvm "$username"
   setup_bashrc "$username"
   setup_kde_defaults "$username"
   set_home_permissions "$username"
