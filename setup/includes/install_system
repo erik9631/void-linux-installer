@@ -1,8 +1,5 @@
 #!/bin/bash
 
-#TODO
-# Add nvidia drivers script
-
 # shellcheck source=network
 source "$SCRIPT_DIR/includes/network"
 
@@ -89,10 +86,6 @@ install_system(){
   stage0_packages_str="$(export_package_group "stage0" "xbps")"
 
   export boot_mode
-
-  ## TODO
-  # Display manager not saving config
-  # Add resolv.conf for NetworkManager
 
   xbps-install -Suy xbps
   xbps-install -y unzip
