@@ -1,0 +1,14 @@
+[EdgeBarrier]
+EdgeBarrier=0
+
+[Effect-zoom]
+InitialZoom=1.2
+
+[Plugins]
+cubeEnabled=true
+translucencyEnabled=true
+wobblywindowsEnabled=true
+zoomEnabled=false
+
+[Xwayland]
+Scale=1

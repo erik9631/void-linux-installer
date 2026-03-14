@@ -1,0 +1,19 @@
+MenuBar=Disabled
+
+[General]
+ShowStatusBar=Disabled
+ShowZoomSlider=true
+SplitView=true
+UseTabForSwitchingSplitView=true
+Version=202
+ViewPropsTimestamp=2026,1,5,16,11,25.007
+
+[KFileDialog Settings]
+Places Icons Auto-resize=false
+Places Icons Static Size=22
+
+[MainWindow]
+MenuBar=Disabled
+
+[PreviewSettings]
+Plugins=exrthumbnail,windowsexethumbnail,comicbookthumbnail,directorythumbnail,ebookthumbnail,svgthumbnail,audiothumbnail,kraorathumbnail,cursorthumbnail,imagethumbnail,windowsimagethumbnail,djvuthumbnail,fontthumbnail,opendocumentthumbnail,jpegthumbnail,librsvg,gdk-pixbuf-thumbnailer,avif

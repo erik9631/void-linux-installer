@@ -95,6 +95,7 @@ whois                            # WHOIS domain lookup tool
 qemu                             # QEMU machine emulator/hypervisor
 qemu-ga                          # QEMU guest agent (for VM host-guest comms)
 libvirt                          # Virtualization management API (virt-manager etc.)
+virt-manager                     # GUI for managing QEMU/KVM virtual machine
 spice-vdagent                    # SPICE guest agent (clipboard/resolution in VMs)
 
 # === Wine / Windows Compatibility ===
