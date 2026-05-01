@@ -127,6 +127,8 @@ install_system(){
   setup_pipewire
   setup_users "$username" "$password"
   setup_services
+  # TODO: After install, comment out the elogind D-Bus activation block in /etc/sv/sddm/run
+  #       elogind is managed by runit directly, the block causes "elogind already running" spam
   setup_pyenv "$username"
   copy_configs "/mnt/home/$username" "$username"
   copy_desktop_files
