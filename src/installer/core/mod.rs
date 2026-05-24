@@ -1,11 +1,8 @@
 use tracing::{error, warn};
 
-use crate::core::{
-    model,
-    traits::{
-        Audio, DevTools, Hardware, Network, OptSetup, PackageManager, Service, Storage,
-        SystemInstall, SystemLifecycle, User, UserInput,
-    },
+use crate::installer::core::traits::{
+    Audio, DevTools, Hardware, Network, OptSetup, PackageManager, Service, Storage, SystemInstall,
+    SystemLifecycle, User, UserInput,
 };
 pub mod errors;
 pub mod model;

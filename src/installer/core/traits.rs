@@ -1,4 +1,4 @@
-use crate::core::{
+use crate::installer::core::{
     errors::*,
     model::{BootMode, FormData, GpuType, PackageList, WirelessInterface, WirelessNetwork},
 };
