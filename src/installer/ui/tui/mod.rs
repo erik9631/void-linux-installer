@@ -5,9 +5,6 @@ use crate::installer::ui::{
     errors::{TuiError, TuiResult},
 };
 
-/// Owns the TUI terminal and drives the event loop. Call `run()` to launch
-/// the task, then use `sender()` to build a `UiHandle`. Call `wait()` to
-/// block the current thread until the TUI exits.
 pub struct Tui {
     tx: mpsc::Sender<Command>,
     rx: Option<mpsc::Receiver<Command>>,
@@ -61,6 +58,10 @@ async fn event_loop(mut rx: mpsc::Receiver<Command>) {
             Command::PackageListForm { packages, reply } => {
                 // TODO: render interactive package selection list
                 let _ = reply.send(todo!("package list form not yet implemented"));
+            }
+            Command::NetworkSelection { networks, reply } => {
+                // TODO: render wireless network picker and password prompt
+                let _ = reply.send(todo!("network selection screen not yet implemented"));
             }
         }
     }

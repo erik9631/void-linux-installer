@@ -1,16 +1,18 @@
 pub mod commands;
 pub mod errors;
+pub mod traits;
 pub mod tui;
 
 use tokio::sync::{mpsc, oneshot};
 
 use crate::installer::core::{
     errors::{InstallFormError, InstallFormResult, PackageListFormError, PackageListFormResult},
-    model::{BootMode, FormData, PackageList},
+    model::{BootMode, FormData, PackageList, WirelessNetwork},
     traits::UserInput,
 };
 use commands::Command;
-use errors::UiChannelError;
+use errors::{NetworkSelectionScreenError, UiChannelError};
+use traits::{NetworkSelectionResult, NetworkSelectionScreen};
 
 /// Generic handle for any UI backend. Implements installer traits by
 /// serialising commands over the channel supplied at construction. Use
@@ -33,6 +35,24 @@ impl UiHandle {
             .blocking_send(build(reply_tx))
             .map_err(|_| UiChannelError::SendFailed)?;
         Ok(reply_rx)
+    }
+}
+
+impl NetworkSelectionScreen for UiHandle {
+    fn show_network_selection(
+        &self,
+        networks: &[WirelessNetwork],
+    ) -> errors::NetworkSelectionScreenResult<NetworkSelectionResult> {
+        let reply_rx = self
+            .send(|reply| Command::NetworkSelection {
+                networks: networks.to_vec(),
+                reply,
+            })
+            .map_err(|e| NetworkSelectionScreenError::InputFailed(e.to_string()))?;
+
+        reply_rx
+            .blocking_recv()
+            .map_err(|e| NetworkSelectionScreenError::InputFailed(e.to_string()))
     }
 }
 

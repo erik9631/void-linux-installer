@@ -1,6 +1,7 @@
 use tokio::sync::oneshot;
 
-use crate::installer::core::model::{BootMode, FormData, PackageList};
+use crate::installer::core::model::{BootMode, FormData, PackageList, WirelessNetwork};
+use crate::installer::ui::traits::NetworkSelectionResult;
 
 /// Every interaction the TUI needs to fulfil on behalf of the installer.
 /// Each variant carries a `reply` sender so the caller can block-wait for
@@ -13,5 +14,9 @@ pub enum Command {
     PackageListForm {
         packages: PackageList,
         reply: oneshot::Sender<Vec<String>>,
+    },
+    NetworkSelection {
+        networks: Vec<WirelessNetwork>,
+        reply: oneshot::Sender<NetworkSelectionResult>,
     },
 }

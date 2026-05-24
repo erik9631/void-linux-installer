@@ -24,6 +24,10 @@ pub struct WirelessInterface {
 #[derive(Debug, Clone)]
 pub struct WirelessNetwork {
     pub ssid: String,
+    /// Signal strength in dBm (e.g. -50 is strong, -90 is weak).
+    pub signal_strength: i32,
+    /// BSSID — the MAC address of the access point, unique per radio.
+    pub bssid: String,
 }
 
 #[derive(Debug, Clone)]

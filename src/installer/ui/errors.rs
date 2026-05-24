@@ -1,5 +1,13 @@
 use thiserror::Error;
 
+pub type NetworkSelectionScreenResult<T> = Result<T, NetworkSelectionScreenError>;
+
+#[derive(Error, Debug)]
+pub enum NetworkSelectionScreenError {
+    #[error("Failed to show network selection screen: {0}")]
+    InputFailed(String),
+}
+
 /// Internal channel errors for the UI module. These never cross the trait
 /// boundary — they are mapped to core trait errors at the UiHandle impl.
 pub type UiChannelResult<T> = Result<T, UiChannelError>;
