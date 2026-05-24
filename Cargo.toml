@@ -1,0 +1,13 @@
+[package]
+name = "void-linux-installer"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+name = "void_linux_installer"
+path = "src/lib.rs"
+
+[dependencies]
+rustix = "1.1.4"
+thiserror = "2.0.18"
+tracing = "0.1.44"

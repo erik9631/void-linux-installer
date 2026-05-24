@@ -1,3 +1,7 @@
 .idea
 fonts
 system.tar
+
+# Rust
+target/
+Cargo.lock

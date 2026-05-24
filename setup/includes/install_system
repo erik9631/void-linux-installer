@@ -94,6 +94,15 @@ install_system(){
   setup_base_system
   setup_bootloader "$boot_mode"
   update_xbps_repo
+
+  # TODO: Ensure Early KMS is enabled in setup_nvidia to prevent
+  # SDDM/Wayland race conditions on Nvidia desktops
+  # Create the dracut config inside the mount point
+  #   # TODO: setup_nvidia should:
+  #   1. Enable Early KMS to prevent SDDM/Wayland race conditions
+  #   2. Add nvidia_drm.fbdev=1 to GRUB_CMDLINE_LINUX_DEFAULT to fix
+  #      TTY/VT switching black screen on Nvidia + Wayland setups
+  #      (nvidia_drm.modeset=1 alone is not sufficient)
   setup_nvidia
 
   # installs all the packages for the system
@@ -127,8 +136,6 @@ install_system(){
   setup_pipewire
   setup_users "$username" "$password"
   setup_services
-  # TODO: After install, comment out the elogind D-Bus activation block in /etc/sv/sddm/run
-  #       elogind is managed by runit directly, the block causes "elogind already running" spam
   setup_pyenv "$username"
   copy_configs "/mnt/home/$username" "$username"
   copy_desktop_files
