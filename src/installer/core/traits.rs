@@ -4,13 +4,13 @@ use crate::installer::core::{
 };
 use std::path::Path;
 
-/// Collects all user input up front. Both methods are infallible — validation
-/// is the UI's responsibility. install_form gathers hostname, username, password,
-/// boot mode, and cloud client selection. package_list_form presents the parsed
-/// package list for the user to confirm or trim.
+/// Collects all user input up front. install_form gathers hostname, username,
+/// password, boot mode, and cloud client selection. package_list_form presents
+/// the parsed package list for the user to confirm or trim. Both return errors
+/// only if the underlying UI channel fails — input validation is the UI's job.
 pub trait UserInput {
-    fn install_form(&self, boot_options: &[BootMode]) -> FormData;
-    fn package_list_form(&self, packages: PackageList) -> Vec<String>;
+    fn install_form(&self, boot_options: &[BootMode]) -> InstallFormResult<FormData>;
+    fn package_list_form(&self, packages: PackageList) -> PackageListFormResult<Vec<String>>;
 }
 
 /// Handles internet connectivity detection and wireless setup via wpa_supplicant.

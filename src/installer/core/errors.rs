@@ -1,5 +1,21 @@
 use thiserror::Error;
 
+// --- User input ---
+
+pub type InstallFormResult<T> = Result<T, InstallFormError>;
+#[derive(Error, Debug)]
+pub enum InstallFormError {
+    #[error("Failed to collect install form input: {0}")]
+    InputFailed(String),
+}
+
+pub type PackageListFormResult<T> = Result<T, PackageListFormError>;
+#[derive(Error, Debug)]
+pub enum PackageListFormError {
+    #[error("Failed to collect package list selection: {0}")]
+    InputFailed(String),
+}
+
 // --- Network ---
 
 pub type InternetCheckResult<T> = Result<T, InternetCheckError>;

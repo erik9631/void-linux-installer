@@ -176,8 +176,21 @@ where
             }
         };
 
-        let form_data = self.user_input.install_form(&bios_types);
-        let selected_packages = self.user_input.package_list_form(package_list);
+        let form_data = match self.user_input.install_form(&bios_types) {
+            Ok(f) => f,
+            Err(e) => {
+                error!("Failed to collect install form: {}", e);
+                return;
+            }
+        };
+
+        let selected_packages = match self.user_input.package_list_form(package_list) {
+            Ok(p) => p,
+            Err(e) => {
+                error!("Failed to collect package list: {}", e);
+                return;
+            }
+        };
 
         if let Err(e) = self
             .system_install
